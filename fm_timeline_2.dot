@@ -1,8 +1,18 @@
 digraph {
     rankdir=LR
-    ranksep=1
     subgraph dates {
-        node [fontsize=24 shape=plaintext]
+        node [fontsize=24 shape=plaintext style=invis]
+        edge [style=invis]
+        jan90 [label="1990" style=vis] 
+        jan90 -> feb90 -> mar90 -> apr90 -> may90 -> jun90 -> jul90 -> aug90 -> sep90 -> oct90 -> nov90 -> dic90
+        jan91 [label="1991" style=vis]
+        jan91 -> feb91 -> mar91 -> apr91 -> may91 -> jun91 -> jul91 -> aug91 -> sep91 -> oct91 -> nov91 -> dic91
+        comment="jan92 feb92 mar92 apr92 may92 jun92 jul92 aug92 sep92 oct92 nov92 dic92"
+
+        node [fontsize=24 shape=plaintext];
+        edge [style=vis]
+        jan90 -> jan91
+        
         1990 -> 1991
         1991 -> 1992
         1992 -> 1993
@@ -36,18 +46,20 @@ digraph {
         2020 -> 2021
     }
     node [fontsize=24 shape=point width=0.25]
-    subgraph 1990 { 
+    { 
         rank=same
-        1990 
+        jan90 
         FODA [xlabel="FODA"]
     }
 
-    subgraph 1998 {
+    {
         rank=same
-        1998
-        FORM [xlabel="First extension"]
+        jun90
+        FORM [xlabel="First FD extension"]
         "Feature Viewpoints" [xlabel="Feature Viewpoints"]
     }
+    FODA -> FORM
+    "FeatuRSEB" [xlabel="FeatuRSEB"];
 
     subgraph 2000 {
         rank=same
@@ -60,39 +72,11 @@ digraph {
         2001
         "Binding times" [xlabel="Binding times"]
     }
-
-    subgraph 2002 {
-        rank=same
-        2002
-        "Cardinality-based FMs" [xlabel="Cardinality-based FMs"]
-    }
-
-    subgraph 2003 {
-        rank=same
-        2003
-        Multiplicities [xlabel="Multiplicities"]
-    }
-
-    subgraph 2004 {
-        rank=same
-        2004
-        "Staged configurations" [xlabel="Staged configurations"]
-    }
-
-    subgraph 2005 {
-        rank=same
-        2005
-        "Staged and multilevel configurations" [xlabel="Staged and multilevel configurations"]
-    }
-
-
+    
     comment="****************************** FD EXTENSIONS ******************************"
     FODA -> FORM
     FORM -> "Feature Viewpoints"
-    FORM -> "Generative Programming"
+    FORM -> FeatuRSEB
+    FeatuRSEB -> "Generative Programming"
     "Feature Viewpoints" -> "Binding times"
-    "Binding times" -> "Cardinality-based FMs"
-    "Cardinality-based FMs" -> Multiplicities
-    Multiplicities -> "Staged configurations"
-    "Staged configurations" -> "Staged and multilevel configurations"
 }
