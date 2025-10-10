@@ -8,15 +8,15 @@ const svg = svgElement.append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
 const JITTER_AMOUNT = 15; // Desplazamiento vertical entre hitos en la misma posición (jittering)
-const OFFSET_INCREMENT = 30; // Espacio vertical entre mini-ramas (subcategorías)
+const PATH_DELIMITER = '.'; // Separador usado en el campo 'path' (e.g., "Fundamentos.Análisis.SAT")
+const BOX_PADDING = 15; // Espacio de relleno alrededor de los nodos dentro de la caja
 let yPosScale, xScale, colorScale; // Variables de escala
 
 // --- FUNCIONES DE ASISTENCIA ---
 
 // Función stub para obtener los detalles de la referencia BibTeX
-// NOTA: Reemplaza esto con tu lógica real de carga y parseo de references.bib
 const getBibDetails = (bibKey) => {
-    // Datos de ejemplo para simular la carga de BibTeX
+    // Datos de ejemplo: DEBE SER REEMPLAZADO por la lógica de carga de references.bib
     const details = {
         "Kang1990FODA": { "authors": "Kang et al.", "source": "SEI Tech Report" },
         "Batory2001Generative": { "authors": "Batory et al.", "source": "Generative Prog. Book" },
@@ -55,51 +55,22 @@ async function loadData() {
         node.source = details.source;
     });
 
-    // 3. ASIGNACIÓN AUTOMÁTICA DE POSICIÓN Y GENÉRICA
+    // 3. ASIGNACIÓN AUTOMÁTICA DE POSICIÓN Y Y PREPARACIÓN DE BOUNDING BOXES
     
-    // 3.1. Calcular el Nivel Principal y Nivel de Profundidad (para escalamiento)
-    const allPaths = data.nodes.map(d => d.path.split('.'));
-    
-    // El nivel 1 (categoría principal) determina la separación vertical grande.
+    const allPaths = data.nodes.map(d => d.path.split(PATH_DELIMITER));
     const primaryCategories = Array.from(new Set(allPaths.map(p => p[0]))).sort();
     
-    // 3.2. Crear el Mapeo de Categoría Principal (String -> Posición Base Numérica)
+    // 3.1. Mapeo de Categoría Principal (Posición Base Numérica)
     const categoryMap = new Map();
     primaryCategories.forEach((cat, index) => {
-        categoryMap.set(cat, index + 1); // Asigna 1, 2, 3... para la escala principal
+        categoryMap.set(cat, index + 1); 
     });
 
-    // 3.3. Crear Mapeo de Posición Final de Rama (Path Completo -> Offset Vertical)
-    const finalBranchOffsets = new Map(); 
-
-    // Agrupamos todos los nodos por su Category Principal (Nivel 1)
-    const nodesByPrimaryCategory = d3.group(data.nodes, d => d.path.split('.')[0]);
-
-    nodesByPrimaryCategory.forEach((nodes, primaryCatName) => {
-        
-        // Extraer todos los paths COMPLETOS para esta Categoría Principal
-        const fullPathsInCat = Array.from(new Set(nodes.map(d => d.path))).sort();
-
-        // Asignar offset simétricamente a CADA path completo (Mini-Rama Final)
-        const numBranches = fullPathsInCat.length;
-        const centerIndex = (numBranches - 1) / 2;
-        
-        fullPathsInCat.forEach((fullPath, index) => {
-            // Calcula el offset: (índice - índice central) * incremento.
-            const offset = (index - centerIndex) * OFFSET_INCREMENT;
-            finalBranchOffsets.set(fullPath, offset);
-        });
-    });
-
-
-    // 3.4. Asignar las posiciones finales (`y_pos` y `y_branch_offset`) a cada nodo
+    // 3.2. Asignar la posición Y base
     data.nodes.forEach(node => {
-        const primaryCat = node.path.split('.')[0];
-
-        node.y_pos = categoryMap.get(primaryCat); // Posición base de la línea principal
-        
-        // Asigna el offset de la mini-rama final usando el path completo
-        node.y_branch_offset = finalBranchOffsets.get(node.path) || 0; 
+        const primaryCat = node.path.split(PATH_DELIMITER)[0];
+        node.y_pos = categoryMap.get(primaryCat); // Esta es la posición Y base de la línea
+        node.full_path = node.path; 
     });
 
 
@@ -115,23 +86,24 @@ async function loadData() {
         .domain([minYear - 2, maxYear + 1])
         .range([0, width]);
 
-    const colorDomain = Array.from(new Set(data.nodes.map(d => d.category)));
+    const colorDomain = Array.from(new Set(data.nodes.map(d => d.path.split(PATH_DELIMITER)[0])));
     colorScale = d3.scaleOrdinal()
         .domain(colorDomain)
         .range(d3.schemeCategory10);
     
-    // 5. CÁLCULO DE JITTERING (Manejar solapamiento dentro de la mini-rama)
-    // Agrupamos por Año + Posición Base + Offset de Rama
-    const nodesByPosition = d3.group(data.nodes, d => `${d.year}-${d.y_pos}-${d.y_branch_offset}`);
+    // 5. CÁLCULO DE JITTERING
+    // Agrupamos solo por Año y Posición Base (y_pos)
+    const nodesByPosition = d3.group(data.nodes, d => `${d.year}-${d.y_pos}`);
 
     data.nodes.forEach(node => {
-        const key = `${node.year}-${node.y_pos}-${node.y_branch_offset}`;
+        const key = `${node.year}-${node.y_pos}`;
         const group = nodesByPosition.get(key); 
         
         if (group) {
             const total = group.length;
             if (total > 1) {
                 const index = group.indexOf(node);
+                // Calcula el jittering para separar hitos en la misma línea principal y año
                 node.y_jitter = JITTER_AMOUNT * (index - (total - 1) / 2);
             } else {
                 node.y_jitter = 0;
@@ -140,9 +112,38 @@ async function loadData() {
              node.y_jitter = 0;
         }
     });
+    
+    // 6. CÁLCULO FINAL DE LÍMITES DE LAS CAJAS (Bounding Boxes)
+    const boundingBoxes = new Map(); 
+    const nodesByFullPath = d3.group(data.nodes, d => d.full_path);
+    
+    nodesByFullPath.forEach((nodesInBranch, fullPath) => {
+        const pathParts = fullPath.split(PATH_DELIMITER);
+        const primaryCat = pathParts[0];
+        
+        // La posición Y de un nodo es: yPosScale(d.y_pos) + d.y_jitter
+        
+        const box = {
+            path: fullPath,
+            name: pathParts.join(' ➔ '),
+            category: primaryCat,
+            level: pathParts.length,
+            nodes: nodesInBranch,
+            
+            x_min: d3.min(nodesInBranch, d => xScale(d.year)) - BOX_PADDING,
+            x_max: d3.max(nodesInBranch, d => xScale(d.year)) + BOX_PADDING,
+            y_min: d3.min(nodesInBranch, d => yPosScale(d.y_pos) + d.y_jitter) - BOX_PADDING,
+            y_max: d3.max(nodesInBranch, d => yPosScale(d.y_pos) + d.y_jitter) + BOX_PADDING
+        };
+        box.width = box.x_max - box.x_min;
+        box.height = box.y_max - box.y_min;
+        
+        boundingBoxes.set(fullPath, box);
+    });
+
 
     // --- DIBUJO ---
-
+    
     // A. Eje X
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
@@ -150,40 +151,60 @@ async function loadData() {
         .selectAll("text")
         .attr("class", "year-label");
 
-    // B. Ramas (Líneas y Etiquetas de Jerarquía)
-    
-    // Dibuja CADA mini-línea y su etiqueta
-    Array.from(finalBranchOffsets.entries()).forEach(([fullPath, offset]) => {
-        const pathParts = fullPath.split('.');
-        const primaryCatName = pathParts[0];
+    // B. Ramas y Bounding Boxes
+
+    // 1. Dibuja las líneas horizontales principales (Base de la Categoría)
+    primaryCategories.forEach(catName => {
+        const y = yPosScale(categoryMap.get(catName));
         
-        const yBase = yPosScale(categoryMap.get(primaryCatName));
-        const y = yBase + offset; // Posición Y final de la mini-rama
-        
-        // Dibuja la mini-línea
         svg.append("line")
             .attr("x1", 0).attr("y1", y)
             .attr("x2", width).attr("y2", y)
-            .attr("stroke", "#ddd").attr("stroke-dasharray", "4,4");
+            .attr("stroke", "#bdc3c7").attr("stroke-dasharray", "4,4");
             
-        // Dibuja la etiqueta de la Mini-Rama
-        const labelText = pathParts.join(' ➔ '); // Junta los niveles con una flecha
-        
+        // Etiqueta de la categoría principal (a la izquierda)
         svg.append("text")
-            .attr("class", "subcategory-label")
-            .attr("x", -10)
-            .attr("y", y)
-            .attr("dy", "0.31em")
-            .attr("text-anchor", "end")
-            .style("font-weight", pathParts.length === 1 ? 'bold' : 'normal') // Negrita para el nivel 1
-            .text(labelText); 
+            .attr("class", "category-label")
+            .attr("x", -10).attr("y", y)
+            .attr("dy", "0.31em").attr("text-anchor", "end")
+            .style("font-weight", "bold")
+            .text(catName); 
     });
 
+    // 2. Dibuja las Bounding Boxes (Cajas Punteadas) y sus etiquetas
+    // Ordenamos para dibujar los niveles más altos (cajas grandes) primero
+    const sortedBoxes = Array.from(boundingBoxes.values()).sort((a, b) => d3.ascending(b.level, a.level));
+
+    sortedBoxes.forEach(box => {
+        // La caja se dibuja para cualquier nivel (incluso el nivel 1)
+        if (box.width > 0 && box.height > 0) { 
+            
+            // Dibuja el rectángulo punteado
+            svg.append("rect")
+                .attr("x", box.x_min)
+                .attr("y", box.y_min)
+                .attr("width", box.width)
+                .attr("height", box.height)
+                .attr("fill", "none")
+                .attr("stroke", colorScale(box.category))
+                .attr("stroke-dasharray", "5,3")
+                .attr("stroke-width", box.level === 1 ? 2 : 1); // Más grueso para Categoría Principal
+
+            // Dibuja la etiqueta de la caja (en la parte superior centrada)
+            svg.append("text")
+                .attr("x", box.x_min + box.width / 2) // Centro X de la caja
+                .attr("y", box.y_min - 5) // 5px por encima del borde
+                .attr("text-anchor", "middle")
+                .style("font-size", "12px")
+                .style("font-style", "italic")
+                .style("fill", colorScale(box.category))
+                .text(box.name);
+        }
+    });
 
     // C. Enlaces (Links)
     const getNode = (id) => data.nodes.find(n => n.id === id);
 
-    // Filtrar enlaces inválidos ANTES de dibujarlos
     const validLinks = data.links.filter(d => {
         return getNode(d.source) !== undefined && getNode(d.target) !== undefined;
     });
@@ -194,12 +215,12 @@ async function loadData() {
         .data(validLinks)
         .join("line")
         .attr("class", "link")
-        // Usa las tres componentes de la posición Y: base, rama, jitter
+        // Posición Y es: yPosScale(d.y_pos) + d.y_jitter
         .attr("x1", d => xScale(getNode(d.source).year))
-        .attr("y1", d => yPosScale(getNode(d.source).y_pos) + getNode(d.source).y_branch_offset + getNode(d.source).y_jitter)
+        .attr("y1", d => yPosScale(getNode(d.source).y_pos) + getNode(d.source).y_jitter)
         .attr("x2", d => xScale(getNode(d.target).year))
-        .attr("y2", d => yPosScale(getNode(d.target).y_pos) + getNode(d.target).y_branch_offset + getNode(d.target).y_jitter)
-        .attr("stroke", d => colorScale(getNode(d.target).category));
+        .attr("y2", d => yPosScale(getNode(d.target).y_pos) + getNode(d.target).y_jitter)
+        .attr("stroke", d => colorScale(getNode(d.target).full_path.split(PATH_DELIMITER)[0]));
 
 
     // D. Nodos (Nodes)
@@ -209,13 +230,13 @@ async function loadData() {
         .data(data.nodes)
         .join("g")
         .attr("class", "node")
-        // Usa las tres componentes de la posición Y
-        .attr("transform", d => `translate(${xScale(d.year)}, ${yPosScale(d.y_pos) + d.y_branch_offset + d.y_jitter})`);
+        // Posición Y es: yPosScale(d.y_pos) + d.y_jitter
+        .attr("transform", d => `translate(${xScale(d.year)}, ${yPosScale(d.y_pos) + d.y_jitter})`);
 
     // Círculos de los hitos
     nodeGroup.append("circle")
         .attr("r", 6)
-        .attr("fill", d => colorScale(d.category));
+        .attr("fill", d => colorScale(d.full_path.split(PATH_DELIMITER)[0]));
 
     // Etiquetas de los hitos (Título y Año)
     nodeGroup.append("text")
@@ -228,7 +249,7 @@ async function loadData() {
 
     // Tooltip
     nodeGroup.append("title")
-        .text(d => `${d.title} (${d.year}) \nAutores: ${d.authors} \nFuente: ${d.source} \nMini-Rama: ${d.subcategory || d.category}`);
+        .text(d => `${d.title} (${d.year}) \nAutores: ${d.authors} \nFuente: ${d.source} \nRama: ${d.full_path}`);
 }
 
 // Iniciar la carga de datos
