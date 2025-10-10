@@ -1,0 +1,52 @@
+{
+  "nodes": [
+    {
+      "id": "FODA_90",
+      "year": 1990,
+      "title": "FODA (Feature Diagram)",
+      "category": "I. Fundamentos",
+      "y_pos": 1,
+      "bib_key": "Kang1990FODA"
+    },
+    {
+      "id": "Logic_01",
+      "year": 2001,
+      "title": "Formalización Lógica (SAT)",
+      "category": "I. Fundamentos",
+      "y_pos": 1,
+      "bib_key": "Batory2001Generative"
+    },
+    {
+      "id": "CFM_05",
+      "year": 2005,
+      "title": "Cardinality FMs (CFMs)",
+      "category": "II. Expresividad",
+      "y_pos": 2,
+      "bib_key": "Czarnecki2005CFM"
+    },
+    {
+      "id": "AFM_05",
+      "year": 2005,
+      "title": "Attributed FMs (AFMs)",
+      "category": "II. Expresividad",
+      "y_pos": 2,
+      "bib_key": "Thiel2005AFM"
+    },
+    {
+      "id": "Testing_05",
+      "year": 2005,
+      "title": "Testing de SPL (Hito Jitter)",
+      "category": "II. Expresividad",
+      "y_pos": 2,
+      "bib_key": "Engels2005Testing"
+    }
+    // ... Añade el resto de tus hitos aquí
+  ],
+  "links": [
+    { "source": "FODA_90", "target": "Logic_01" },
+    { "source": "Logic_01", "target": "CFM_05" },
+    { "source": "Logic_01", "target": "AFM_05" },
+    { "source": "Logic_01", "target": "Testing_05" }
+    // ... Añade el resto de tus conexiones aquí
+  ]
+}

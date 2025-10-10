@@ -1,13 +1,14 @@
 // 1. Datos del Proyecto (Hitos y Conexiones)
 const data = {
-    // Array de los hitos (Nodos)
+    // Añado un hito extra en 2005 para demostrar el jittering
     "nodes": [
         // I. Fundamentos y Formalización
         { "id": "FODA_90", "year": 1990, "title": "FODA (Feature Diagram)", "authors": "Kang et al.", "category": "I. Fundamentos", "y_pos": 1 },
         { "id": "Logic_01", "year": 2001, "title": "Formalización Lógica (SAT)", "authors": "Batory et al.", "category": "I. Fundamentos", "y_pos": 1 },
-        // II. Expresividad y Modelado Avanzado
+        // II. Expresividad y Modelado Avanzado (Años y líneas coincidentes para el Jittering)
         { "id": "CFM_05", "year": 2005, "title": "Cardinality FMs (CFMs)", "authors": "Czarnecki & Antkiewicz", "category": "II. Expresividad", "y_pos": 2 },
         { "id": "AFM_05", "year": 2005, "title": "Attributed FMs (AFMs)", "authors": "Thiel & Hein", "category": "II. Expresividad", "y_pos": 2 },
+        { "id": "Testing_05", "year": 2005, "title": "Testing de SPL (Hito Jitter)", "authors": "Engels et al.", "category": "II. Expresividad", "y_pos": 2 }, // TERCER HITO EN 2005, LÍNEA 2
         // III. Implementación de Variabilidad
         { "id": "Mapping_04", "year": 2004, "title": "Mapping FM a Solution Space", "authors": "Von der Maßen & Lichter", "category": "III. Implementación", "y_pos": 3 },
         // IV. Ingeniería de Configuración y Optimización
@@ -15,11 +16,11 @@ const data = {
         // V. Evolución y Mantenimiento
         { "id": "Mining_14", "year": 2014, "title": "Feature Mining (Extracción automática)", "authors": "López-Herrejon et al.", "category": "V. Evolución", "y_pos": 5 },
     ],
-    // Array de conexiones (Enlaces)
     "links": [
         { "source": "FODA_90", "target": "Logic_01" },
         { "source": "Logic_01", "target": "CFM_05" },
         { "source": "Logic_01", "target": "AFM_05" }, 
+        { "source": "Logic_01", "target": "Testing_05" }, 
         { "source": "FODA_90", "target": "Mapping_04" }, 
         { "source": "Logic_01", "target": "Dead_07" },
         { "source": "Logic_01", "target": "Mining_14" }
@@ -38,9 +39,32 @@ const svg = svgElement.append("g")
 // Mapeo de y_pos a coordenada Y real
 const yPosScale = d3.scalePoint()
     .domain(data.nodes.map(d => d.y_pos).sort(d3.ascending))
-    .range([50, height - 50]); // Rango visible en el SVG
+    .range([50, height - 50]); 
 
-// 3. Escala de Tiempo (Eje X)
+// 3. Cálculo de Jittering (Desplazamiento Vertical)
+const JITTER_AMOUNT = 15; // Distancia de separación vertical en píxeles
+
+// Agrupamos los nodos por su posición única (Año + Rama)
+const nodesByPosition = d3.group(data.nodes, d => `${d.year}-${d.y_pos}`);
+
+// Aplicamos el desplazamiento a cada nodo
+data.nodes.forEach(node => {
+    const key = `${node.year}-${node.y_pos}`;
+    const group = nodesByPosition.get(key);
+    const total = group.length;
+
+    if (total > 1) {
+        // Encontramos el índice del nodo dentro de su grupo
+        const index = group.indexOf(node);
+        // Desplazamiento calculado para centrar el grupo
+        // (index - (total - 1) / 2) da valores como [-1, 0, 1] para total=3
+        node.y_jitter = JITTER_AMOUNT * (index - (total - 1) / 2);
+    } else {
+        node.y_jitter = 0; // Sin desplazamiento
+    }
+});
+
+// 4. Escalas y Colores
 const minYear = d3.min(data.nodes, d => d.year);
 const maxYear = new Date().getFullYear(); 
 
@@ -48,7 +72,6 @@ const xScale = d3.scaleLinear()
     .domain([minYear - 2, maxYear + 1])
     .range([0, width]);
 
-// 4. Definición de colores por Categoría
 const categories = Array.from(new Set(data.nodes.map(d => d.category)));
 const colorScale = d3.scaleOrdinal()
     .domain(categories)
@@ -64,6 +87,7 @@ svg.append("g")
     .attr("class", "year-label");
 
 // B. Ramas (Líneas y Etiquetas)
+// (Usar la lógica del script anterior para dibujar líneas y etiquetas)
 const uniqueCategories = Array.from(new Set(data.nodes.map(d => d.category)))
     .map(name => ({
         name: name,
@@ -94,14 +118,8 @@ uniqueCategories.forEach(cat => {
 });
 
 // C. Enlaces (Links)
-// Función para encontrar las coordenadas de un nodo por su ID
-const getNodeCoords = (id) => {
-    const node = data.nodes.find(n => n.id === id);
-    return {
-        x: xScale(node.year),
-        y: yPosScale(node.y_pos)
-    };
-};
+// Función simple para encontrar un nodo por ID
+const getNode = (id) => data.nodes.find(n => n.id === id);
 
 svg.append("g")
     .attr("class", "links")
@@ -109,11 +127,12 @@ svg.append("g")
     .data(data.links)
     .join("line")
     .attr("class", "link")
-    .attr("x1", d => getNodeCoords(d.source).x)
-    .attr("y1", d => getNodeCoords(d.source).y)
-    .attr("x2", d => getNodeCoords(d.target).x)
-    .attr("y2", d => getNodeCoords(d.target).y)
-    .attr("stroke", d => colorScale(data.nodes.find(n => n.id === d.target).category));
+    // Usamos las coordenadas ajustadas (y_jitter) para los enlaces
+    .attr("x1", d => xScale(getNode(d.source).year))
+    .attr("y1", d => yPosScale(getNode(d.source).y_pos) + getNode(d.source).y_jitter)
+    .attr("x2", d => xScale(getNode(d.target).year))
+    .attr("y2", d => yPosScale(getNode(d.target).y_pos) + getNode(d.target).y_jitter)
+    .attr("stroke", d => colorScale(getNode(d.target).category));
 
 
 // D. Nodos (Nodes)
@@ -123,7 +142,8 @@ const nodeGroup = svg.append("g")
     .data(data.nodes)
     .join("g")
     .attr("class", "node")
-    .attr("transform", d => `translate(${xScale(d.year)}, ${yPosScale(d.y_pos)})`);
+    // Aplicamos el jitter al transform
+    .attr("transform", d => `translate(${xScale(d.year)}, ${yPosScale(d.y_pos) + d.y_jitter})`);
 
 // Círculos de los hitos
 nodeGroup.append("circle")
