@@ -14,6 +14,7 @@ const SEPARATION_PADDING = 5;
 const NODE_RADIUS = 6; 
 
 let yPosScale, xScale, colorScale;
+let nodesById; // Lo haremos global para facilitar el acceso en loadData
 
 // --- FUNCIONES DE ASISTENCIA ---
 
@@ -30,6 +31,47 @@ const getBibDetails = (bibKey) => {
     };
     return details[bibKey] || { "authors": "Desconocido", "source": "Desconocida" };
 };
+
+/**
+ * Genera la ruta curva (Bézier) para un enlace, desviándose para no pasar sobre hitos.
+ * @param {Object} d - Datos del enlace (source, target)
+ * @param {number} offset - Distancia de desvío vertical.
+ * @returns {string} - Cadena de path SVG.
+ */
+function linkPath(d, offset) {
+    const source = nodesById.get(d.source);
+    const target = nodesById.get(d.target);
+    
+    // Puntos de inicio y fin (S: Source, T: Target)
+    const sx = source.x_coord;
+    const sy = source.y_coord_final;
+    const tx = target.x_coord;
+    const ty = target.y_coord_final;
+    
+    // Punto medio del enlace
+    const mx = (sx + tx) / 2;
+    const my = (sy + ty) / 2;
+    
+    // El punto de control (CP) se desvía del punto medio MY, en la dirección perpendicular.
+    // Usamos el 'offset' (una constante) para el desvío vertical (eje Y).
+    // Si el enlace va de izquierda a derecha (sx < tx), el desvío es vertical.
+    
+    // Para simplificar, desviaremos el punto de control verticalmente.
+    // Usaremos el offset para el desvío. El offset debe ser mayor que el JITTER_AMOUNT + NODE_RADIUS
+    const CP_Y = my + offset;
+    
+    // C = Curva de Bézier cúbica
+    // M sx,sy (mover a inicio)
+    // S mx,CP_Y tx,ty (curva suave: punto de control en [mx, CP_Y], termina en [tx,ty])
+    
+    // Nota: Usamos una curva de Bézier cuadrática (Q) o cúbica suave (S).
+    // Usaremos la curva cúbica suave (S) para un control más limpio y un solo punto de control.
+    // S: refleja el punto de control anterior, así que usaremos Q (cuadrática).
+    
+    // Mover a inicio (M)
+    // Curva cuadrática (Q) con un solo punto de control (mx, CP_Y) hasta el final (tx, ty)
+    return `M ${sx},${sy} Q ${mx},${CP_Y} ${tx},${ty}`;
+}
 
 
 // --- FUNCIÓN PRINCIPAL DE DIBUJO ---
@@ -62,7 +104,7 @@ async function loadData() {
         node.description = node.description || 'N/A';
     });
     
-    const nodesById = new Map(data.nodes.map(d => [d.id, d]));
+    nodesById = new Map(data.nodes.map(d => [d.id, d]));
 
     // 3. ASIGNACIÓN AUTOMÁTICA DE POSICIÓN Y Y PREPARACIÓN DE BOUNDING BOXES
     const primaryCategories = Array.from(new Set(data.nodes.map(d => d.hierarchy[0]))).sort();
@@ -110,18 +152,11 @@ async function loadData() {
             let neighborCount = 0;
             
             data.links.forEach(link => {
-                if (link.source === node.id) {
-                    const targetNode = nodesById.get(link.target);
-                    if (targetNode) {
-                        neighborYSum += targetNode.y_coord;
-                        neighborCount++;
-                    }
-                } else if (link.target === node.id) {
-                    const sourceNode = nodesById.get(link.source);
-                    if (sourceNode) {
-                        neighborYSum += sourceNode.y_coord;
-                        neighborCount++;
-                    }
+                const otherId = link.source === node.id ? link.target : link.target === node.id ? link.source : null;
+                const otherNode = nodesById.get(otherId);
+                if (otherNode) {
+                    neighborYSum += otherNode.y_coord;
+                    neighborCount++;
                 }
             });
             
@@ -233,22 +268,25 @@ async function loadData() {
         }
     });
 
-    // C. Enlaces (Links)
+    // C. Enlaces (Links) - ¡MODIFICADO A CURVAS!
     const validLinks = data.links.filter(d => {
         return nodesById.get(d.source) !== undefined && nodesById.get(d.target) !== undefined;
     });
 
+    // Heurística de desvío: Distancia vertical para el punto de control de la curva
+    const DEVIATION_OFFSET = 30; 
+    
     svg.append("g")
         .attr("class", "links")
-        .selectAll("line")
+        .selectAll("path") // Cambiado de "line" a "path"
         .data(validLinks)
-        .join("line")
+        .join("path")
         .attr("class", "link")
-        .attr("x1", d => nodesById.get(d.source).x_coord)
-        .attr("y1", d => nodesById.get(d.source).y_coord_final)
-        .attr("x2", d => nodesById.get(d.target).x_coord)
-        .attr("y2", d => nodesById.get(d.target).y_coord_final)
-        .attr("stroke", d => colorScale(nodesById.get(d.target).hierarchy[0]));
+        .attr("d", d => linkPath(d, DEVIATION_OFFSET)) // Usamos la función linkPath
+        .attr("fill", "none")
+        .attr("stroke", d => colorScale(nodesById.get(d.target).hierarchy[0]))
+        .attr("stroke-width", 1.5)
+        .lower(); // Enviamos los enlaces al fondo para que no tapen hitos ni etiquetas
 
 
     // D. Nodos (Nodes)
@@ -327,9 +365,8 @@ async function loadData() {
     });
 
     // 4. Implementar el algoritmo de resolución de colisiones (desplazamiento vertical Y horizontal)
-    // Este es un enfoque simplificado. Para una solución robusta, d3-force-label o similar sería ideal.
-    const MAX_ITERATIONS = 200; // Más iteraciones para más movimiento
-    const FORCE_STRENGTH = 0.5; // Qué tan fuerte se empujan las etiquetas
+    const MAX_ITERATIONS = 200; 
+    const FORCE_STRENGTH = 0.5; 
 
     for (let i = 0; i < MAX_ITERATIONS; i++) {
         let moved = false;
@@ -348,56 +385,41 @@ async function loadData() {
                     r1.y + r1.height + SEPARATION_PADDING > r2.y) {
                     
                     // Resolución: Calcular el vector de "empuje"
-                    const dx = (r1.x + r1.width / 2) - (r2.x + r2.width / 2);
-                    const dy = (r1.y + r1.height / 2) - (r2.y + r2.height / 2);
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (dist === 0) { // Superposición perfecta, mover aleatoriamente un poco
-                        l2.x += Math.random() * 2 - 1;
-                        l2.y += Math.random() * 2 - 1;
-                        moved = true;
-                    } else {
-                        // Calcular la superposición en X y Y
-                        const overlapX = Math.max(0, Math.min(r1.x + r1.width, r2.x + r2.width) - Math.max(r1.x, r2.x));
-                        const overlapY = Math.max(0, Math.min(r1.y + r1.height, r2.y + r2.height) - Math.max(r1.y, r2.y));
+                    const overlapX = Math.max(0, Math.min(r1.x + r1.width, r2.x + r2.width) - Math.max(r1.x, r2.x));
+                    const overlapY = Math.max(0, Math.min(r1.y + r1.height, r2.y + r2.height) - Math.max(r1.y, r2.y));
 
-                        // Mover la etiqueta que esté "más a la derecha" o "más abajo" de la pareja.
-                        // O, para simplificar, siempre movemos l2 de l1.
-                        // Movemos la mitad de la superposición, aplicando una fuerza.
-                        if (overlapX > 0 && overlapY > 0) { // Hay solapamiento real
-                            if (overlapX < overlapY) { // Mover horizontalmente
-                                if (l1.x < l2.x) { // l1 está a la izquierda de l2
-                                    l2.x += overlapX / 2 * FORCE_STRENGTH;
-                                } else {
-                                    l2.x -= overlapX / 2 * FORCE_STRENGTH;
-                                }
-                            } else { // Mover verticalmente
-                                if (l1.y < l2.y) { // l1 está por encima de l2
-                                    l2.y += overlapY / 2 * FORCE_STRENGTH;
-                                } else {
-                                    l2.y -= overlapY / 2 * FORCE_STRENGTH;
-                                }
+                    if (overlapX > 0 && overlapY > 0) {
+                        if (overlapX < overlapY) { // Mover horizontalmente
+                            if (l1.x < l2.x) { 
+                                l2.x += overlapX / 2 * FORCE_STRENGTH;
+                            } else {
+                                l2.x -= overlapX / 2 * FORCE_STRENGTH;
                             }
-                            moved = true;
+                        } else { // Mover verticalmente
+                            if (l1.y < l2.y) { 
+                                l2.y += overlapY / 2 * FORCE_STRENGTH;
+                            } else {
+                                l2.y -= overlapY / 2 * FORCE_STRENGTH;
+                            }
                         }
+                        moved = true;
                     }
                 }
             });
 
-            // Restringir etiquetas al SVG
+            // Restricción al SVG
             l1.x = Math.max(0, Math.min(width - l1.width, l1.x));
             l1.y = Math.max(0, Math.min(height - l1.height, l1.y));
 
-            // Las etiquetas también deben ser "atraídas" por su hito (fuera del rango de colisión)
-            // Se puede añadir una fuerza para mantenerlas cerca del nodoX + NODE_RADIUS
-            const idealX = l1.nodeX + NODE_RADIUS + 10; // Mismo offset que la posición inicial
-            const idealY = l1.nodeY - l1.height / 2; // Centrado con el hito
+            // Fuerza de Atracción (mantener cerca del hito)
+            const idealX = l1.nodeX + NODE_RADIUS + 10; 
+            const idealY = l1.nodeY - l1.height / 2; 
             
-            l1.x += (idealX - l1.x) * 0.05; // Fuerza de atracción suave
-            l1.y += (idealY - l1.y) * 0.05; // Fuerza de atracción suave
+            l1.x += (idealX - l1.x) * 0.05; 
+            l1.y += (idealY - l1.y) * 0.05; 
 
         });
-        if (!moved && i > MAX_ITERATIONS / 2) break; // Si no se movió nada después de un tiempo, salir.
+        if (!moved && i > MAX_ITERATIONS / 2) break; 
     }
 
     // 5. Actualizar la posición de las etiquetas y ajustar los puntos del codo
@@ -421,9 +443,10 @@ async function loadData() {
         .join("path")
         .attr("class", "connector")
         .attr("d", d => {
-            // M = Mover a (start point)
-            // L = Línea a (intermediate point)
-            // L = Línea a (end point)
+            // M = Mover a (start point: borde del hito)
+            // L = Línea horizontal al codo X (manteniendo Y del hito)
+            // L = Línea vertical al codo Y (manteniendo X del codo)
+            // L = Línea horizontal al inicio del texto
             return `M ${d.nodeX + NODE_RADIUS} ${d.nodeY} L ${d.elbowX} ${d.nodeY} L ${d.elbowX} ${d.elbowY} L ${d.x} ${d.elbowY}`;
         })
         .attr("fill", "none")
