@@ -7,16 +7,18 @@ const height = parseInt(svgElement.attr("height")) - margin.top - margin.bottom;
 const svg = svgElement.append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-const JITTER_AMOUNT = 15; // Desplazamiento vertical entre hitos en la misma posición (jittering)
-const BOX_PADDING = 15; // Espacio de relleno alrededor de los nodos dentro de la caja
-let yPosScale, xScale, colorScale; // Variables de escala
+const JITTER_AMOUNT = 15;
+const BOX_PADDING = 15;
+const TEMP_PATH_DELIMITER = '|';
+const SEPARATION_PADDING = 5; 
+const NODE_RADIUS = 6; 
+
+let yPosScale, xScale, colorScale;
 
 // --- FUNCIONES DE ASISTENCIA ---
 
 // Función stub para obtener los detalles de la referencia BibTeX
-// NOTA: Reemplaza esto con tu lógica real de carga y parseo de references.bib
 const getBibDetails = (bibKey) => {
-    // Datos de ejemplo: DEBE SER REEMPLAZADO
     const details = {
         "Kang1990FODA": { "authors": "Kang et al.", "source": "SEI Tech Report" },
         "Batory2001Generative": { "authors": "Batory et al.", "source": "Generative Prog. Book" },
@@ -48,42 +50,37 @@ async function loadData() {
         return; 
     }
     
-    // Usaremos un separador temporal para simplificar el mapeo interno
-    const TEMP_PATH_DELIMITER = '|'; 
-
-    // 2. FUSIÓN DE DATOS (Añadir detalles BibTeX)
+    // 2. FUSIÓN DE DATOS (Añadir detalles BibTeX y Preparar Path Interno)
     data.nodes.forEach(node => {
         const details = getBibDetails(node.bib_key);
         node.authors = details.authors;
         node.source = details.source;
         
-        // Asignar jerarquía si falta (seguridad)
         if (!node.hierarchy || node.hierarchy.length === 0) {
             node.hierarchy = ["Sin Categoría"];
         }
+        node.description = node.description || 'N/A';
     });
+    
+    // NOTA: Necesitamos acceso rápido a los nodos por ID para la heurística de cruces.
+    const nodesById = new Map(data.nodes.map(d => [d.id, d]));
 
     // 3. ASIGNACIÓN AUTOMÁTICA DE POSICIÓN Y Y PREPARACIÓN DE BOUNDING BOXES
-    
-    // Obtener las categorías principales (Nivel 1 del array hierarchy)
     const primaryCategories = Array.from(new Set(data.nodes.map(d => d.hierarchy[0]))).sort();
     
-    // 3.1. Mapeo de Categoría Principal (Posición Base Numérica)
     const categoryMap = new Map();
     primaryCategories.forEach((cat, index) => {
         categoryMap.set(cat, index + 1); 
     });
 
-    // 3.2. Asignar la posición Y base y crear el path interno
     data.nodes.forEach(node => {
         const primaryCat = node.hierarchy[0];
-        node.y_pos = categoryMap.get(primaryCat); // Esta es la posición Y base de la línea
+        node.y_pos = categoryMap.get(primaryCat);
         node.full_path = node.hierarchy.join(TEMP_PATH_DELIMITER); 
     });
 
 
     // 4. CÁLCULO DE ESCALAS
-    
     yPosScale = d3.scalePoint()
         .domain(primaryCategories.map(cat => categoryMap.get(cat)).sort(d3.ascending))
         .range([50, height - 50]); 
@@ -99,36 +96,70 @@ async function loadData() {
         .domain(colorDomain)
         .range(d3.schemeCategory10);
     
-    // 5. CÁLCULO DE JITTERING
-    // Agrupamos solo por Año y Posición Base (y_pos)
-    const nodesByPosition = d3.group(data.nodes, d => `${d.year}-${d.y_pos}`);
-
+    // 5. CÁLCULO DE JITTERING CON OPTIMIZACIÓN DE CRUCES
+    
+    // 5.1. Pre-cálculo de la posición X de los nodos
     data.nodes.forEach(node => {
-        const key = `${node.year}-${node.y_pos}`;
-        const group = nodesByPosition.get(key); 
-        
-        if (group) {
-            const total = group.length;
-            if (total > 1) {
-                const index = group.indexOf(node);
-                node.y_jitter = JITTER_AMOUNT * (index - (total - 1) / 2);
-            } else {
-                node.y_jitter = 0;
-            }
-        } else {
-             node.y_jitter = 0;
-        }
+        node.x_coord = xScale(node.year);
+        // Inicialmente y_coord solo tiene la posición base Y (sin jittering)
+        node.y_coord = yPosScale(node.y_pos); 
     });
     
-    // 6. CÁLCULO FINAL DE LÍMITES DE LAS CAJAS (Bounding Boxes)
+    // 5.2. Heurística de la Posición del Baricentro
+    // Agrupamos hitos por su línea base Y (y_pos) para ordenarlos por el promedio de sus vecinos.
+    const nodesByYPos = d3.group(data.nodes, d => d.y_pos);
 
-    const boundingBoxes = new Map();
+    nodesByYPos.forEach(nodeGroup => {
+        
+        // 1. Calcular el "Baricentro" (posición Y promedio de sus vecinos) para cada nodo
+        nodeGroup.forEach(node => {
+            let neighborYSum = 0;
+            let neighborCount = 0;
+            
+            // Buscar vecinos de origen (source) y destino (target)
+            data.links.forEach(link => {
+                if (link.source === node.id) {
+                    const targetNode = nodesById.get(link.target);
+                    if (targetNode) {
+                        neighborYSum += targetNode.y_coord; // Usamos la posición Y sin jittering
+                        neighborCount++;
+                    }
+                } else if (link.target === node.id) {
+                    const sourceNode = nodesById.get(link.source);
+                    if (sourceNode) {
+                        neighborYSum += sourceNode.y_coord; // Usamos la posición Y sin jittering
+                        neighborCount++;
+                    }
+                }
+            });
+            
+            // Asignar el baricentro (o la posición actual si no hay vecinos)
+            node.baricenter = neighborCount > 0 ? neighborYSum / neighborCount : node.y_coord;
+        });
+        
+        // 2. Ordenar el grupo de nodos por el valor del baricentro (esto minimiza los cruces)
+        nodeGroup.sort((a, b) => d3.ascending(a.baricenter, b.baricenter));
+        
+        // 3. Aplicar Jittering (desplazamiento vertical) basado en el nuevo orden
+        const total = nodeGroup.length;
+        nodeGroup.forEach((node, index) => {
+            // Calcula el jittering para separar hitos
+            node.y_jitter = JITTER_AMOUNT * (index - (total - 1) / 2);
+            // Actualiza la posición Y final
+            node.y_coord_final = node.y_coord + node.y_jitter;
+        });
+    });
+    
+    // Los datos están ahora ordenados y tienen 'y_jitter' y 'y_coord_final' asignados.
+    
+    
+    // 6. CÁLCULO FINAL DE LÍMITES DE LAS CAJAS (Bounding Boxes)
+    // ... (El cálculo de las cajas necesita usar 'y_coord_final' para los límites) ...
+    const boundingBoxes = new Map(); 
     const allUniquePrefixes = new Set(); 
 
-    // Paso 6.1: Identificar TODOS los prefijos posibles para el anidamiento
     data.nodes.forEach(node => {
         let currentPathParts = [];
-        // Genera A, A|B, A|B|C, etc.
         node.hierarchy.forEach(part => {
             currentPathParts.push(part);
             const currentPath = currentPathParts.join(TEMP_PATH_DELIMITER);
@@ -136,28 +167,24 @@ async function loadData() {
         });
     });
 
-    // Paso 6.2: Calcular los límites de cada caja
     allUniquePrefixes.forEach(fullPath => {
-        
         const pathParts = fullPath.split(TEMP_PATH_DELIMITER);
         const primaryCat = pathParts[0];
-
-        // Filtra los nodos que pertenecen a este prefijo (A|B contiene todos los nodos A|B|C y A|B|D)
         const nodesInPrefix = data.nodes.filter(d => d.full_path.startsWith(fullPath));
 
         if (nodesInPrefix.length > 0) {
             
             const box = {
                 path: fullPath,
-                name: pathParts[pathParts.length - 1], // Último nivel para la etiqueta
+                name: pathParts[pathParts.length - 1],
                 category: primaryCat,
                 level: pathParts.length, 
                 
-                // Cálculo de límites basado en todos los nodos descendientes (anidamiento)
-                x_min: d3.min(nodesInPrefix, d => xScale(d.year)) - BOX_PADDING,
-                x_max: d3.max(nodesInPrefix, d => xScale(d.year)) + BOX_PADDING,
-                y_min: d3.min(nodesInPrefix, d => yPosScale(d.y_pos) + d.y_jitter) - BOX_PADDING,
-                y_max: d3.max(nodesInPrefix, d => yPosScale(d.y_pos) + d.y_jitter) + BOX_PADDING
+                // **USO DE y_coord_final:** Usar la posición Y final (con jittering)
+                x_min: d3.min(nodesInPrefix, d => d.x_coord) - BOX_PADDING,
+                x_max: d3.max(nodesInPrefix, d => d.x_coord) + BOX_PADDING,
+                y_min: d3.min(nodesInPrefix, d => d.y_coord_final) - BOX_PADDING,
+                y_max: d3.max(nodesInPrefix, d => d.y_coord_final) + BOX_PADDING
             };
             box.width = box.x_max - box.x_min;
             box.height = box.y_max - box.y_min;
@@ -169,16 +196,15 @@ async function loadData() {
 
     // --- DIBUJO ---
     
-    // A. Eje X
+    // A. Eje X (Permanece igual)
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(xScale).tickFormat(d3.format("d")).tickValues(d3.range(minYear, maxYear + 1, 5)))
         .selectAll("text")
         .attr("class", "year-label");
 
-    // B. Ramas y Bounding Boxes
-
-    // 1. Dibuja las líneas horizontales principales (Base de la Categoría)
+    // B. Ramas y Bounding Boxes (Permanece igual, usando las coordenadas calculadas)
+    // ... (Sección B del código anterior) ...
     primaryCategories.forEach(catName => {
         const y = yPosScale(categoryMap.get(catName));
         
@@ -187,7 +213,6 @@ async function loadData() {
             .attr("x2", width).attr("y2", y)
             .attr("stroke", "#bdc3c7").attr("stroke-dasharray", "4,4");
             
-        // Etiqueta de la categoría principal (a la izquierda)
         svg.append("text")
             .attr("class", "category-label")
             .attr("x", -10).attr("y", y)
@@ -196,8 +221,6 @@ async function loadData() {
             .text(catName); 
     });
 
-    // 2. Dibuja las Bounding Boxes (Cajas Punteadas) y sus etiquetas
-    // ORDEN CLAVE: Ordenamos por nivel ASCENDENTE (1, 2, 3...) para dibujar las cajas GRANDES primero
     const sortedBoxes = Array.from(boundingBoxes.values()).sort((a, b) => {
         const levelOrder = d3.ascending(a.level, b.level);
         if (levelOrder !== 0) return levelOrder;
@@ -207,7 +230,6 @@ async function loadData() {
     sortedBoxes.forEach(box => {
         if (box.width > 0 && box.height > 0) { 
             
-            // Dibuja el rectángulo punteado
             svg.append("rect")
                 .attr("x", box.x_min)
                 .attr("y", box.y_min)
@@ -218,23 +240,21 @@ async function loadData() {
                 .attr("stroke-dasharray", "5,3")
                 .attr("stroke-width", box.level === 1 ? 2 : 1); 
 
-            // Dibuja la etiqueta de la caja (en la parte superior centrada)
             svg.append("text")
-                .attr("x", box.x_min + box.width / 2) // Centro X de la caja
-                .attr("y", box.y_min - 5) // 5px por encima del borde
+                .attr("x", box.x_min + box.width / 2) 
+                .attr("y", box.y_min - 5) 
                 .attr("text-anchor", "middle")
                 .style("font-size", "12px")
                 .style("font-style", "italic")
                 .style("fill", colorScale(box.category))
-                .text(box.name); // Usamos box.name (último nivel)
+                .text(box.name);
         }
     });
 
     // C. Enlaces (Links)
-    const getNode = (id) => data.nodes.find(n => n.id === id);
-
+    // **USO DE y_coord_final:** Usar la posición Y final para los conectores
     const validLinks = data.links.filter(d => {
-        return getNode(d.source) !== undefined && getNode(d.target) !== undefined;
+        return nodesById.get(d.source) !== undefined && nodesById.get(d.target) !== undefined;
     });
 
     svg.append("g")
@@ -243,39 +263,115 @@ async function loadData() {
         .data(validLinks)
         .join("line")
         .attr("class", "link")
-        .attr("x1", d => xScale(getNode(d.source).year))
-        .attr("y1", d => yPosScale(getNode(d.source).y_pos) + getNode(d.source).y_jitter)
-        .attr("x2", d => xScale(getNode(d.target).year))
-        .attr("y2", d => yPosScale(getNode(d.target).y_pos) + getNode(d.target).y_jitter)
-        .attr("stroke", d => colorScale(getNode(d.target).hierarchy[0]));
+        .attr("x1", d => nodesById.get(d.source).x_coord)
+        .attr("y1", d => nodesById.get(d.source).y_coord_final)
+        .attr("x2", d => nodesById.get(d.target).x_coord)
+        .attr("y2", d => nodesById.get(d.target).y_coord_final)
+        .attr("stroke", d => colorScale(nodesById.get(d.target).hierarchy[0]));
 
 
     // D. Nodos (Nodes)
+    // **USO DE y_coord_final:** Usar la posición Y final para los hitos
     const nodeGroup = svg.append("g")
         .attr("class", "nodes")
         .selectAll("g")
         .data(data.nodes)
         .join("g")
         .attr("class", "node")
-        .attr("transform", d => `translate(${xScale(d.year)}, ${yPosScale(d.y_pos) + d.y_jitter})`);
+        .attr("transform", d => `translate(${d.x_coord}, ${d.y_coord_final})`);
 
     // Círculos de los hitos
     nodeGroup.append("circle")
-        .attr("r", 6)
+        .attr("r", NODE_RADIUS)
         .attr("fill", d => colorScale(d.hierarchy[0]));
 
-    // Etiquetas de los hitos (Título y Año)
-    nodeGroup.append("text")
-        .attr("dx", 8) 
-        .attr("dy", 3)
-        .text(d => `${d.title} (${d.year})`)
-        .style("text-anchor", "start")
-        .attr("transform", "rotate(-25)"); 
 
-    // Tooltip
+    // --- ALGORITMO DE ETIQUETADO INTELIGENTE (COLISIÓN) ---
+
+    const labelGroup = svg.append("g").attr("class", "labels");
+    const connectorGroup = svg.append("g").attr("class", "connectors");
+
+    // 1. Preparar los datos de las etiquetas
+    const labels = data.nodes.map(d => {
+        const nodeX = d.x_coord;
+        const nodeY = d.y_coord_final; // **USO DE y_coord_final**
+        
+        const text = `${d.title} (${d.year})`; 
+        const initialY = nodeY - (NODE_RADIUS * 2); 
+
+        return {
+            id: d.id, nodeX: nodeX, nodeY: nodeY, text: text,
+            x: nodeX + 10, y: initialY, width: 0, height: 0, data: d
+        };
+    });
+
+    // 2. Dibujar las etiquetas de texto
+    const textElements = labelGroup.selectAll("g.label-item")
+        .data(labels)
+        .join("g")
+        .attr("class", "label-item")
+        .attr("transform", d => `translate(${d.x}, ${d.y})`);
+
+    textElements.append("text")
+        .attr("dx", 0)
+        .attr("dy", "0.35em")
+        .style("text-anchor", "start")
+        .style("font-size", "11px")
+        .text(d => d.text);
+
+    // 3. Calcular las dimensiones reales de cada etiqueta
+    textElements.each(function(d) {
+        const bbox = this.getBBox();
+        d.width = bbox.width + 4; 
+        d.height = bbox.height + 2; 
+        
+        d.x_rect_offset = 0; 
+        d.y_rect_offset = 0; 
+    });
+
+    // 4. Implementar el algoritmo de resolución de colisiones (desplazamiento vertical)
+    const MAX_ITERATIONS = 100;
+
+    for (let i = 0; i < MAX_ITERATIONS; i++) {
+        let moved = false;
+        labels.forEach((l1, idx1) => {
+            labels.forEach((l2, idx2) => {
+                if (idx1 < idx2) {
+                    if (l1.x < l2.x + l2.width &&
+                        l1.x + l1.width > l2.x &&
+                        l1.y < l2.y + l2.height &&
+                        l1.y + l1.height > l2.y) {
+                        
+                        l2.y += (l1.y + l1.height - l2.y) + SEPARATION_PADDING;
+                        moved = true;
+                    }
+                }
+            });
+        });
+        if (!moved) break;
+    }
+
+    // 5. Actualizar la posición de las etiquetas
+    textElements.attr("transform", d => `translate(${d.x}, ${d.y})`);
+
+    // 6. Dibujar los conectores
+    connectorGroup.selectAll("line.connector")
+        .data(labels)
+        .join("line")
+        .attr("class", "connector")
+        // Comienza en el borde derecho del círculo
+        .attr("x1", d => d.nodeX + NODE_RADIUS) 
+        .attr("y1", d => d.nodeY)
+        // Termina en el inicio del texto
+        .attr("x2", d => d.x + d.x_rect_offset)
+        .attr("y2", d => d.y + d.height / 2 + d.y_rect_offset) 
+        .attr("stroke", "#888")
+        .attr("stroke-width", 0.5);
+
+
+    // Tooltip (adjunto al círculo)
     nodeGroup.append("title")
-        // AÑADIDO: Incluye d.description en la primera línea.
-        .text(d => `${d.title} (${d.year})\nDescripción: ${d.description || 'N/A'} \nAutores: ${d.authors} \nFuente: ${d.source} \nRama: ${d.hierarchy.join(' ➔ ')}`);
+        .text(d => `${d.title} (${d.year})\nDescripción: ${d.description} \nAutores: ${d.authors} \nFuente: ${d.source} \nRama: ${d.hierarchy.join(' ➔ ')}`);
 }
 
 // Iniciar la carga de datos
