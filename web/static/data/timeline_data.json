@@ -12,6 +12,7 @@
       "year": 2001,
       "title": "Formalización Lógica (SAT)",
       "category": "I. Fundamentos",
+      "subcategory": "Lógica Proposicional",
       "bib_key": "Batory2001Generative"
     },
     {
@@ -34,6 +35,22 @@
       "title": "Testing de SPL (Hito Jitter)",
       "category": "II. Expresividad",
       "bib_key": "Engels2005Testing"
+    },
+    {
+      "id": "Dead_07",
+      "year": 2007,
+      "title": "Análisis de Propiedades (Dead Features)",
+      "category": "I. Fundamentos", 
+      "subcategory": "Lógica Proposicional",
+      "bib_key": "Benavides2007Dead"
+    },
+    {
+      "id": "Config_09",
+      "year": 2009,
+      "title": "Configuración Basada en CSP",
+      "category": "I. Fundamentos", 
+      "subcategory": "Constraint Programming",
+      "bib_key": "Mendoca2009Config"
     }
   ],
   "links": [
