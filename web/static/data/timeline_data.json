@@ -3,23 +3,15 @@
     {
       "id": "Neighbors1984_Draco",
       "year": 1984,
-      "title": "The Draco approach",
+      "title": "Draco",
       "description": "The Draco approach",
       "hierarchy": ["I. Fundamentos", "Feature model's origins"],
       "bib_key": "Neighbors1984_Draco"
     },
     {
-      "id": "Batory1988_GENESIS",
-      "year": 1988,
-      "title": "The GENESIS tool",
-      "description": "The GENESIS tool",
-      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
-      "bib_key": "Batory1988_GENESIS"
-    },
-    {
       "id": "Lubars1988_ROSE",
       "year": 1988,
-      "title": "The ROSE reuse system",
+      "title": "ROSE",
       "description": "The ROSE reuse system (Feature-based selection of components)",
       "hierarchy": ["I. Fundamentos", "Feature model's origins"],
       "bib_key": "Lubars1988_ROSE"
@@ -27,15 +19,23 @@
     {
       "id": "Biggerstaff1989_ROSE",
       "year": 1989,
-      "title": "The ROSE reuse system",
+      "title": "ROSE",
       "description": "The ROSE reuse system (Feature-based selection of components)",
       "hierarchy": ["I. Fundamentos", "Feature model's origins"],
       "bib_key": "Biggerstaff1989_ROSE"
     },
+        {
+      "id": "Batory1988_GENESIS",
+      "year": 1988,
+      "title": "GENESIS",
+      "description": "The GENESIS tool",
+      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "bib_key": "Batory1988_GENESIS"
+    },
     {
       "id": "MooreAndBailin1989_KAPTUR",
       "year": 1989,
-      "title": "The KAPTUR system",
+      "title": "KAPTUR",
       "description": "The KAPTUR system.",
       "hierarchy": ["I. Fundamentos", "Feature model's origins"],
       "bib_key": "MooreAndBailin1989_KAPTUR"
