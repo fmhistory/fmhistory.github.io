@@ -55,57 +55,58 @@ async function loadData() {
         node.source = details.source;
     });
 
-    // 3. ASIGNACIÓN AUTOMÁTICA DE POSICIÓN Y (`y_pos`) y CÁLCULO DE MINI-RAMAS
-
-    // 3.1. Obtener y Ordenar las categorías principales
-    const categories = Array.from(new Set(data.nodes.map(d => d.category))).sort();
-
+    // 3. ASIGNACIÓN AUTOMÁTICA DE POSICIÓN Y GENÉRICA
+    
+    // 3.1. Calcular el Nivel Principal y Nivel de Profundidad (para escalamiento)
+    const allPaths = data.nodes.map(d => d.path.split('.'));
+    
+    // El nivel 1 (categoría principal) determina la separación vertical grande.
+    const primaryCategories = Array.from(new Set(allPaths.map(p => p[0]))).sort();
+    
     // 3.2. Crear el Mapeo de Categoría Principal (String -> Posición Base Numérica)
     const categoryMap = new Map();
-    categories.forEach((cat, index) => {
-        categoryMap.set(cat, index + 1); // Asigna 1, 2, 3...
+    primaryCategories.forEach((cat, index) => {
+        categoryMap.set(cat, index + 1); // Asigna 1, 2, 3... para la escala principal
     });
 
-    // 3.3. Crear Mapeo de Subcategoría (String -> Offset Vertical de la Rama)
-    const subcategoryOffsets = new Map(); 
+    // 3.3. Crear Mapeo de Posición Final de Rama (Path Completo -> Offset Vertical)
+    const finalBranchOffsets = new Map(); 
 
-    categories.forEach(catName => {
-        // Extraer y ordenar las subcategorías dentro de la categoría actual
-        const subcatsInCat = Array.from(new Set(
-            data.nodes
-                .filter(d => d.category === catName)
-                .map(d => d.subcategory || catName) // Usar el nombre de la categoría si subcategory es nulo
-        )).sort();
+    // Agrupamos todos los nodos por su Category Principal (Nivel 1)
+    const nodesByPrimaryCategory = d3.group(data.nodes, d => d.path.split('.')[0]);
 
-        // Asignar offset simétricamente: (ej. 3 subcats -> [-30, 0, 30])
-        const numSubcats = subcatsInCat.length;
-        const centerIndex = (numSubcats - 1) / 2;
+    nodesByPrimaryCategory.forEach((nodes, primaryCatName) => {
         
-        subcatsInCat.forEach((subcatName, index) => {
-            const offsetKey = `${catName}|${subcatName}`;
+        // Extraer todos los paths COMPLETOS para esta Categoría Principal
+        const fullPathsInCat = Array.from(new Set(nodes.map(d => d.path))).sort();
+
+        // Asignar offset simétricamente a CADA path completo (Mini-Rama Final)
+        const numBranches = fullPathsInCat.length;
+        const centerIndex = (numBranches - 1) / 2;
+        
+        fullPathsInCat.forEach((fullPath, index) => {
             // Calcula el offset: (índice - índice central) * incremento.
             const offset = (index - centerIndex) * OFFSET_INCREMENT;
-            subcategoryOffsets.set(offsetKey, offset);
+            finalBranchOffsets.set(fullPath, offset);
         });
     });
 
 
     // 3.4. Asignar las posiciones finales (`y_pos` y `y_branch_offset`) a cada nodo
     data.nodes.forEach(node => {
-        node.y_pos = categoryMap.get(node.category);
+        const primaryCat = node.path.split('.')[0];
+
+        node.y_pos = categoryMap.get(primaryCat); // Posición base de la línea principal
         
-        const subcatName = node.subcategory || node.category; 
-        const offsetKey = `${node.category}|${subcatName}`;
-        
-        // Asigna el offset de la mini-rama
-        node.y_branch_offset = subcategoryOffsets.get(offsetKey) || 0; 
+        // Asigna el offset de la mini-rama final usando el path completo
+        node.y_branch_offset = finalBranchOffsets.get(node.path) || 0; 
     });
 
 
     // 4. CÁLCULO DE ESCALAS
     
     yPosScale = d3.scalePoint()
-        .domain(categories.map(cat => categoryMap.get(cat)).sort(d3.ascending))
+        .domain(primaryCategories.map(cat => categoryMap.get(cat)).sort(d3.ascending))
         .range([50, height - 50]); 
 
     const minYear = d3.min(data.nodes, d => d.year);
@@ -149,12 +150,14 @@ async function loadData() {
         .selectAll("text")
         .attr("class", "year-label");
 
-    // B. Ramas (Líneas y Etiquetas de Categoría/Subcategoría)
+    // B. Ramas (Líneas y Etiquetas de Jerarquía)
     
-    // Dibuja CADA mini-línea y su etiqueta de subcategoría/categoría
-    Array.from(subcategoryOffsets.entries()).forEach(([key, offset]) => {
-        const [catName, subcatName] = key.split('|');
-        const yBase = yPosScale(categoryMap.get(catName));
+    // Dibuja CADA mini-línea y su etiqueta
+    Array.from(finalBranchOffsets.entries()).forEach(([fullPath, offset]) => {
+        const pathParts = fullPath.split('.');
+        const primaryCatName = pathParts[0];
+        
+        const yBase = yPosScale(categoryMap.get(primaryCatName));
         const y = yBase + offset; // Posición Y final de la mini-rama
         
         // Dibuja la mini-línea
@@ -163,15 +166,17 @@ async function loadData() {
             .attr("x2", width).attr("y2", y)
             .attr("stroke", "#ddd").attr("stroke-dasharray", "4,4");
             
-        // Dibuja la etiqueta de la Subcategoría/Categoría
+        // Dibuja la etiqueta de la Mini-Rama
+        const labelText = pathParts.join(' ➔ '); // Junta los niveles con una flecha
+        
         svg.append("text")
             .attr("class", "subcategory-label")
             .attr("x", -10)
             .attr("y", y)
             .attr("dy", "0.31em")
             .attr("text-anchor", "end")
-            // Si la subcategoría es diferente a la categoría, la etiqueta
-            .text(subcatName !== catName ? `— ${subcatName}` : catName); 
+            .style("font-weight", pathParts.length === 1 ? 'bold' : 'normal') // Negrita para el nivel 1
+            .text(labelText); 
     });
 
 

@@ -4,53 +4,57 @@
       "id": "FODA_90",
       "year": 1990,
       "title": "FODA (Feature Diagram)",
-      "category": "I. Fundamentos",
+      "path": "Fundamentos.Modelos", 
       "bib_key": "Kang1990FODA"
     },
     {
       "id": "Logic_01",
       "year": 2001,
       "title": "Formalización Lógica (SAT)",
-      "category": "I. Fundamentos",
-      "subcategory": "Lógica Proposicional",
+      "path": "Fundamentos.Análisis.SAT",
       "bib_key": "Batory2001Generative"
     },
     {
       "id": "CFM_05",
       "year": 2005,
       "title": "Cardinality FMs (CFMs)",
-      "category": "II. Expresividad",
+      "path": "Expresividad",
       "bib_key": "Czarnecki2005CFM"
     },
     {
       "id": "AFM_05",
       "year": 2005,
       "title": "Attributed FMs (AFMs)",
-      "category": "II. Expresividad",
+      "path": "Expresividad",
       "bib_key": "Thiel2005AFM"
     },
     {
       "id": "Testing_05",
       "year": 2005,
       "title": "Testing de SPL (Hito Jitter)",
-      "category": "II. Expresividad",
+      "path": "Expresividad",
       "bib_key": "Engels2005Testing"
     },
     {
       "id": "Dead_07",
       "year": 2007,
       "title": "Análisis de Propiedades (Dead Features)",
-      "category": "I. Fundamentos", 
-      "subcategory": "Lógica Proposicional",
+      "path": "Fundamentos.Análisis.SAT",
       "bib_key": "Benavides2007Dead"
     },
     {
       "id": "Config_09",
       "year": 2009,
       "title": "Configuración Basada en CSP",
-      "category": "I. Fundamentos", 
-      "subcategory": "Constraint Programming",
+      "path": "Fundamentos.Análisis.CSP",
       "bib_key": "Mendoca2009Config"
+    },
+    {
+      "id": "Mining_14",
+      "year": 2014,
+      "title": "Feature Mining (Extracción automática)",
+      "path": "Evolución",
+      "bib_key": "López14Mining"
     }
   ],
   "links": [
