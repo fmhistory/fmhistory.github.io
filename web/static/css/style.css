@@ -1,0 +1,54 @@
+/* Estilos generales */
+body { 
+    font-family: 'Arial', sans-serif; 
+    margin: 20px;
+    background-color: #f9f9f9;
+}
+
+h1 {
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+}
+
+/* Estilos D3.js */
+/* Enlaces (Líneas de conexión entre hitos) */
+.link {
+    stroke: #999;
+    stroke-opacity: 0.6;
+    stroke-width: 2px;
+}
+
+/* Nodos (Círculos de los hitos) */
+.node circle {
+    stroke: #fff;
+    stroke-width: 1.5px;
+    cursor: pointer;
+    transition: r 0.2s, stroke-width 0.2s; /* Pequeña animación al interactuar */
+}
+
+.node circle:hover {
+    r: 8;
+    stroke-width: 3px;
+}
+
+/* Etiquetas de los hitos */
+.node text {
+    pointer-events: none; /* Ignora clics en el texto */
+    font-size: 10px;
+    fill: #333;
+}
+
+/* Etiquetas del eje X (Años) */
+.year-label {
+    font-size: 12px;
+    font-weight: bold;
+    fill: #555;
+}
+
+/* Etiquetas del eje Y (Ramas/Categorías) */
+.category-label {
+    font-size: 14px;
+    font-weight: bold;
+    fill: #34495e;
+}
