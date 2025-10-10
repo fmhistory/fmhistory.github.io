@@ -104,7 +104,7 @@
     { "source": "Lubars1988_ROSE", "target": "Biggerstaff1989_ROSE" },
     { "source": "Biggerstaff1989_ROSE", "target": "Kang1990_FODA" },
     { "source": "MooreAndBailin1989_KAPTUR", "target": "Kang1990_FODA" },
-    { "source": "FODA_90", "target": "Logic_01" },
+    { "source": "Kang1990_FODA", "target": "Logic_01" },
     { "source": "Logic_01", "target": "CFM_05" },
     { "source": "Logic_01", "target": "AFM_05" },
     { "source": "Logic_01", "target": "Testing_05" }

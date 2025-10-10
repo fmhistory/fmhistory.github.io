@@ -62,7 +62,6 @@ async function loadData() {
         node.description = node.description || 'N/A';
     });
     
-    // NOTA: Necesitamos acceso rápido a los nodos por ID para la heurística de cruces.
     const nodesById = new Map(data.nodes.map(d => [d.id, d]));
 
     // 3. ASIGNACIÓN AUTOMÁTICA DE POSICIÓN Y Y PREPARACIÓN DE BOUNDING BOXES
@@ -98,63 +97,48 @@ async function loadData() {
     
     // 5. CÁLCULO DE JITTERING CON OPTIMIZACIÓN DE CRUCES
     
-    // 5.1. Pre-cálculo de la posición X de los nodos
     data.nodes.forEach(node => {
         node.x_coord = xScale(node.year);
-        // Inicialmente y_coord solo tiene la posición base Y (sin jittering)
         node.y_coord = yPosScale(node.y_pos); 
     });
     
-    // 5.2. Heurística de la Posición del Baricentro
-    // Agrupamos hitos por su línea base Y (y_pos) para ordenarlos por el promedio de sus vecinos.
     const nodesByYPos = d3.group(data.nodes, d => d.y_pos);
 
     nodesByYPos.forEach(nodeGroup => {
-        
-        // 1. Calcular el "Baricentro" (posición Y promedio de sus vecinos) para cada nodo
         nodeGroup.forEach(node => {
             let neighborYSum = 0;
             let neighborCount = 0;
             
-            // Buscar vecinos de origen (source) y destino (target)
             data.links.forEach(link => {
                 if (link.source === node.id) {
                     const targetNode = nodesById.get(link.target);
                     if (targetNode) {
-                        neighborYSum += targetNode.y_coord; // Usamos la posición Y sin jittering
+                        neighborYSum += targetNode.y_coord;
                         neighborCount++;
                     }
                 } else if (link.target === node.id) {
                     const sourceNode = nodesById.get(link.source);
                     if (sourceNode) {
-                        neighborYSum += sourceNode.y_coord; // Usamos la posición Y sin jittering
+                        neighborYSum += sourceNode.y_coord;
                         neighborCount++;
                     }
                 }
             });
             
-            // Asignar el baricentro (o la posición actual si no hay vecinos)
             node.baricenter = neighborCount > 0 ? neighborYSum / neighborCount : node.y_coord;
         });
         
-        // 2. Ordenar el grupo de nodos por el valor del baricentro (esto minimiza los cruces)
         nodeGroup.sort((a, b) => d3.ascending(a.baricenter, b.baricenter));
         
-        // 3. Aplicar Jittering (desplazamiento vertical) basado en el nuevo orden
         const total = nodeGroup.length;
         nodeGroup.forEach((node, index) => {
-            // Calcula el jittering para separar hitos
             node.y_jitter = JITTER_AMOUNT * (index - (total - 1) / 2);
-            // Actualiza la posición Y final
             node.y_coord_final = node.y_coord + node.y_jitter;
         });
     });
     
-    // Los datos están ahora ordenados y tienen 'y_jitter' y 'y_coord_final' asignados.
-    
     
     // 6. CÁLCULO FINAL DE LÍMITES DE LAS CAJAS (Bounding Boxes)
-    // ... (El cálculo de las cajas necesita usar 'y_coord_final' para los límites) ...
     const boundingBoxes = new Map(); 
     const allUniquePrefixes = new Set(); 
 
@@ -180,7 +164,6 @@ async function loadData() {
                 category: primaryCat,
                 level: pathParts.length, 
                 
-                // **USO DE y_coord_final:** Usar la posición Y final (con jittering)
                 x_min: d3.min(nodesInPrefix, d => d.x_coord) - BOX_PADDING,
                 x_max: d3.max(nodesInPrefix, d => d.x_coord) + BOX_PADDING,
                 y_min: d3.min(nodesInPrefix, d => d.y_coord_final) - BOX_PADDING,
@@ -196,15 +179,14 @@ async function loadData() {
 
     // --- DIBUJO ---
     
-    // A. Eje X (Permanece igual)
+    // A. Eje X
     svg.append("g")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(xScale).tickFormat(d3.format("d")).tickValues(d3.range(minYear, maxYear + 1, 5)))
         .selectAll("text")
         .attr("class", "year-label");
 
-    // B. Ramas y Bounding Boxes (Permanece igual, usando las coordenadas calculadas)
-    // ... (Sección B del código anterior) ...
+    // B. Ramas y Bounding Boxes
     primaryCategories.forEach(catName => {
         const y = yPosScale(categoryMap.get(catName));
         
@@ -252,7 +234,6 @@ async function loadData() {
     });
 
     // C. Enlaces (Links)
-    // **USO DE y_coord_final:** Usar la posición Y final para los conectores
     const validLinks = data.links.filter(d => {
         return nodesById.get(d.source) !== undefined && nodesById.get(d.target) !== undefined;
     });
@@ -271,7 +252,6 @@ async function loadData() {
 
 
     // D. Nodos (Nodes)
-    // **USO DE y_coord_final:** Usar la posición Y final para los hitos
     const nodeGroup = svg.append("g")
         .attr("class", "nodes")
         .selectAll("g")
@@ -286,7 +266,7 @@ async function loadData() {
         .attr("fill", d => colorScale(d.hierarchy[0]));
 
 
-    // --- ALGORITMO DE ETIQUETADO INTELIGENTE (COLISIÓN) ---
+    // --- ALGORITMO DE ETIQUETADO INTELIGENTE (COLISIÓN Y CODOS) ---
 
     const labelGroup = svg.append("g").attr("class", "labels");
     const connectorGroup = svg.append("g").attr("class", "connectors");
@@ -294,18 +274,33 @@ async function loadData() {
     // 1. Preparar los datos de las etiquetas
     const labels = data.nodes.map(d => {
         const nodeX = d.x_coord;
-        const nodeY = d.y_coord_final; // **USO DE y_coord_final**
+        const nodeY = d.y_coord_final;
         
         const text = `${d.title} (${d.year})`; 
-        const initialY = nodeY - (NODE_RADIUS * 2); 
-
+        
+        // Posición inicial del texto, intenta el lado derecho primero
+        const initialLabelX = nodeX + NODE_RADIUS + 10; // 10px a la derecha del círculo
+        const initialLabelY = nodeY; // Centrado con el hito
+        
         return {
-            id: d.id, nodeX: nodeX, nodeY: nodeY, text: text,
-            x: nodeX + 10, y: initialY, width: 0, height: 0, data: d
+            id: d.id, 
+            nodeX: nodeX, 
+            nodeY: nodeY, 
+            text: text,
+            x: initialLabelX, 
+            y: initialLabelY,      
+            width: 0,      
+            height: 0,     
+            data: d,
+            // Puntos para el conector en codo (inicialmente, se ajustarán)
+            anchorX: nodeX + NODE_RADIUS, 
+            anchorY: nodeY,
+            elbowX: initialLabelX - 5, // Justo antes del texto
+            elbowY: initialLabelY
         };
     });
 
-    // 2. Dibujar las etiquetas de texto
+    // 2. Dibujar las etiquetas de texto (sin rect de fondo)
     const textElements = labelGroup.selectAll("g.label-item")
         .data(labels)
         .join("g")
@@ -325,46 +320,113 @@ async function loadData() {
         d.width = bbox.width + 4; 
         d.height = bbox.height + 2; 
         
-        d.x_rect_offset = 0; 
-        d.y_rect_offset = 0; 
+        // Ajusta la 'y' inicial del texto para que el centro vertical del bbox esté en 'd.y'
+        d.y -= d.height / 2;
+        // Ajusta el 'elbowY' con la nueva 'y' para que el codo siga el texto
+        d.elbowY = d.y + d.height / 2; 
     });
 
-    // 4. Implementar el algoritmo de resolución de colisiones (desplazamiento vertical)
-    const MAX_ITERATIONS = 100;
+    // 4. Implementar el algoritmo de resolución de colisiones (desplazamiento vertical Y horizontal)
+    // Este es un enfoque simplificado. Para una solución robusta, d3-force-label o similar sería ideal.
+    const MAX_ITERATIONS = 200; // Más iteraciones para más movimiento
+    const FORCE_STRENGTH = 0.5; // Qué tan fuerte se empujan las etiquetas
 
     for (let i = 0; i < MAX_ITERATIONS; i++) {
         let moved = false;
-        labels.forEach((l1, idx1) => {
-            labels.forEach((l2, idx2) => {
-                if (idx1 < idx2) {
-                    if (l1.x < l2.x + l2.width &&
-                        l1.x + l1.width > l2.x &&
-                        l1.y < l2.y + l2.height &&
-                        l1.y + l1.height > l2.y) {
-                        
-                        l2.y += (l1.y + l1.height - l2.y) + SEPARATION_PADDING;
+        labels.forEach((l1) => {
+            labels.forEach((l2) => {
+                if (l1.id === l2.id) return;
+
+                // Crear rectángulos para la detección de colisiones
+                const r1 = { x: l1.x, y: l1.y, width: l1.width, height: l1.height };
+                const r2 = { x: l2.x, y: l2.y, width: l2.width, height: l2.height };
+
+                // Detección de colisión (AABB) con padding
+                if (r1.x < r2.x + r2.width + SEPARATION_PADDING &&
+                    r1.x + r1.width + SEPARATION_PADDING > r2.x &&
+                    r1.y < r2.y + r2.height + SEPARATION_PADDING &&
+                    r1.y + r1.height + SEPARATION_PADDING > r2.y) {
+                    
+                    // Resolución: Calcular el vector de "empuje"
+                    const dx = (r1.x + r1.width / 2) - (r2.x + r2.width / 2);
+                    const dy = (r1.y + r1.height / 2) - (r2.y + r2.height / 2);
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist === 0) { // Superposición perfecta, mover aleatoriamente un poco
+                        l2.x += Math.random() * 2 - 1;
+                        l2.y += Math.random() * 2 - 1;
                         moved = true;
+                    } else {
+                        // Calcular la superposición en X y Y
+                        const overlapX = Math.max(0, Math.min(r1.x + r1.width, r2.x + r2.width) - Math.max(r1.x, r2.x));
+                        const overlapY = Math.max(0, Math.min(r1.y + r1.height, r2.y + r2.height) - Math.max(r1.y, r2.y));
+
+                        // Mover la etiqueta que esté "más a la derecha" o "más abajo" de la pareja.
+                        // O, para simplificar, siempre movemos l2 de l1.
+                        // Movemos la mitad de la superposición, aplicando una fuerza.
+                        if (overlapX > 0 && overlapY > 0) { // Hay solapamiento real
+                            if (overlapX < overlapY) { // Mover horizontalmente
+                                if (l1.x < l2.x) { // l1 está a la izquierda de l2
+                                    l2.x += overlapX / 2 * FORCE_STRENGTH;
+                                } else {
+                                    l2.x -= overlapX / 2 * FORCE_STRENGTH;
+                                }
+                            } else { // Mover verticalmente
+                                if (l1.y < l2.y) { // l1 está por encima de l2
+                                    l2.y += overlapY / 2 * FORCE_STRENGTH;
+                                } else {
+                                    l2.y -= overlapY / 2 * FORCE_STRENGTH;
+                                }
+                            }
+                            moved = true;
+                        }
                     }
                 }
             });
+
+            // Restringir etiquetas al SVG
+            l1.x = Math.max(0, Math.min(width - l1.width, l1.x));
+            l1.y = Math.max(0, Math.min(height - l1.height, l1.y));
+
+            // Las etiquetas también deben ser "atraídas" por su hito (fuera del rango de colisión)
+            // Se puede añadir una fuerza para mantenerlas cerca del nodoX + NODE_RADIUS
+            const idealX = l1.nodeX + NODE_RADIUS + 10; // Mismo offset que la posición inicial
+            const idealY = l1.nodeY - l1.height / 2; // Centrado con el hito
+            
+            l1.x += (idealX - l1.x) * 0.05; // Fuerza de atracción suave
+            l1.y += (idealY - l1.y) * 0.05; // Fuerza de atracción suave
+
         });
-        if (!moved) break;
+        if (!moved && i > MAX_ITERATIONS / 2) break; // Si no se movió nada después de un tiempo, salir.
     }
 
-    // 5. Actualizar la posición de las etiquetas
+    // 5. Actualizar la posición de las etiquetas y ajustar los puntos del codo
     textElements.attr("transform", d => `translate(${d.x}, ${d.y})`);
 
-    // 6. Dibujar los conectores
-    connectorGroup.selectAll("line.connector")
+    labels.forEach(d => {
+        // El codo Y debe estar al centro del texto
+        d.elbowY = d.y + d.height / 2; 
+        // El codo X debe ser el punto más cercano al hito en el borde izquierdo del texto
+        d.elbowX = d.x; 
+        // Asegurarse de que el codo no retroceda más allá del hito.
+        if (d.elbowX < d.nodeX + NODE_RADIUS + 5) { // Un pequeño margen
+            d.elbowX = d.nodeX + NODE_RADIUS + 5;
+        }
+    });
+
+
+    // 6. Dibujar los conectores como Path (líneas en codo)
+    connectorGroup.selectAll("path.connector")
         .data(labels)
-        .join("line")
+        .join("path")
         .attr("class", "connector")
-        // Comienza en el borde derecho del círculo
-        .attr("x1", d => d.nodeX + NODE_RADIUS) 
-        .attr("y1", d => d.nodeY)
-        // Termina en el inicio del texto
-        .attr("x2", d => d.x + d.x_rect_offset)
-        .attr("y2", d => d.y + d.height / 2 + d.y_rect_offset) 
+        .attr("d", d => {
+            // M = Mover a (start point)
+            // L = Línea a (intermediate point)
+            // L = Línea a (end point)
+            return `M ${d.nodeX + NODE_RADIUS} ${d.nodeY} L ${d.elbowX} ${d.nodeY} L ${d.elbowX} ${d.elbowY} L ${d.x} ${d.elbowY}`;
+        })
+        .attr("fill", "none")
         .attr("stroke", "#888")
         .attr("stroke-width", 0.5);
 
