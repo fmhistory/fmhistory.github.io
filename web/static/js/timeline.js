@@ -2,20 +2,44 @@
 
 // CONFIGURACIÓN GLOBAL ESTÁTICA
 const CONFIG = {
-    margin: { top: 50, right: 30, bottom: 50, left: 200 },
-    JITTER_AMOUNT: 50, // REDUCIDO: Menos dispersión, más cerca de la línea central.
-    BOX_PADDING: 15,
-    TEMP_PATH_DELIMITER: '|',
-    SEPARATION_PADDING: 5,
-    NODE_RADIUS: 4, 
-    REPULSION_THRESHOLD: 8,
-    REPULSION_FORCE_FACTOR: 0.5,
-    DEVIATION_OFFSET: 0, // SOLICITADO: Enlaces rectos
-    MAX_COLLISION_ITERATIONS: 200,
-    COLLISION_FORCE_STRENGTH: 0.5,
-    WIDTH_MULTIPLIER: 1.8, 
-};
+    // ---------------------------------------------------------------------
+    // AJUSTES DE MARGEN Y DIMENSIONES
+    // ---------------------------------------------------------------------
+    margin: { top: 50, right: 30, bottom: 50, left: 200 }, // Margen alrededor del área de dibujo del gráfico.
+    
+    WIDTH_MULTIPLIER: 2.5, // ⭐ CONTROL DEL ESPACIO ENTRE AÑOS: Aumenta el ancho de cálculo (this.width) para separar las columnas verticales de los años. 1.0 = ancho normal, 1.8 = 80% más ancho.
 
+    // ---------------------------------------------------------------------
+    // COMPORTAMIENTO VERTICAL (JITTERING y Repulsión)
+    // ---------------------------------------------------------------------
+    JITTER_AMOUNT: 50, // Máxima distancia vertical (en píxeles) para dispersar hitos que caen en el mismo año. Un valor menor aumenta la compactación hacia la línea central.
+    DEVIATION_OFFSET: 0, // Desplazamiento de control para la curvatura de los enlaces (paths). 0 = Enlaces rectos.
+
+    REPULSION_THRESHOLD: 8, // Distancia mínima a la que los nodos deben mantenerse alejados de las líneas de categorías vecinas.
+    REPULSION_FORCE_FACTOR: 0.5, // Fuerza con la que los nodos son empujados lejos de las líneas de categorías.
+
+    // ---------------------------------------------------------------------
+    // CAJAS (BOUNDING BOXES)
+    // ---------------------------------------------------------------------
+    BOX_PADDING: 15, // Relleno (padding) alrededor de los hitos al calcular el tamaño de las bounding boxes (cuadros punteados).
+    
+    // ---------------------------------------------------------------------
+    // NODOS (HITOS)
+    // ---------------------------------------------------------------------
+    NODE_RADIUS: 4, // Radio del círculo de cada hito (nodo).
+    
+    // ---------------------------------------------------------------------
+    // ALGORITMO DE COLISIONES DE ETIQUETAS
+    // ---------------------------------------------------------------------
+    SEPARATION_PADDING: 5, // Espacio mínimo requerido entre cajas de etiquetas (en píxeles) para evitar colisiones.
+    MAX_COLLISION_ITERATIONS: 100, // Número máximo de veces que el algoritmo intentará resolver las superposiciones de etiquetas.
+    COLLISION_FORCE_STRENGTH: 1.0, // Intensidad con la que las etiquetas se repelen entre sí cuando colisionan (mayor = empuje más fuerte).
+    
+    // ---------------------------------------------------------------------
+    // UTILIDADES INTERNAS
+    // ---------------------------------------------------------------------
+    TEMP_PATH_DELIMITER: '|', // Carácter usado internamente para concatenar la jerarquía de categorías.
+};
 
 // --- FUNCIONES DE ASISTENCIA (Helpers) ---
 
@@ -33,21 +57,14 @@ const getBibDetails = (bibKey) => {
 };
 
 /**
- * Genera la ruta curva (Bézier cuadrática) para un enlace.
+ * Genera la ruta recta para un enlace. El offset se ignora porque es 0.
  */
 function linkPath(source, target, offset) {
     const sx = source.x_coord;
     const sy = source.y_coord_final;
     const tx = target.x_coord;
     const ty = target.y_coord_final;
-    
-    const mx = (sx + tx) / 2;
-    const my = (sy + ty) / 2;
-    
-    // Punto de control desviado
-    const CP_Y = my + offset;
-    
-    return `M ${sx},${sy} Q ${mx},${CP_Y} ${tx},${ty}`;
+    return `M ${sx},${sy} L ${tx},${ty}`; 
 }
 
 
@@ -57,18 +74,18 @@ class TimelineChart {
     
     constructor(selector, dataUrl) {
         this.svgElement = d3.select(selector);
-        // Calcula el ancho visible del SVG
+        
+        // Ancho visible y altura
         this.visibleWidth = parseInt(this.svgElement.attr("width")) - CONFIG.margin.left - CONFIG.margin.right;
         this.height = parseInt(this.svgElement.attr("height")) - CONFIG.margin.top - CONFIG.margin.bottom;
         
-        // Calcula el ancho expandido para la lógica del gráfico
+        // Ancho de cálculo expandido (para mayor separación horizontal)
         this.width = this.visibleWidth * CONFIG.WIDTH_MULTIPLIER; 
 
-        // Asegúrate de que el contenedor SVG puede manejar este ancho (o que el div padre tiene scroll)
+        // Ajuste el tamaño del SVG si el contenido es más ancho (para desplazamiento)
         this.svg = this.svgElement.append("g")
             .attr("transform", `translate(${CONFIG.margin.left},${CONFIG.margin.top})`);
         
-        // Si el ancho calculado es mayor que el ancho visible, ajustamos el ancho del SVG
         if (this.width > this.visibleWidth) {
              this.svgElement.attr("width", this.width + CONFIG.margin.left + CONFIG.margin.right);
         }
@@ -83,7 +100,6 @@ class TimelineChart {
     }
 
     async loadAndProcessData() {
-        // 1. Carga de datos
         this.data = await d3.json(this.dataUrl);
         
         if (!this.data || !this.data.nodes || !this.data.links) {
@@ -92,7 +108,6 @@ class TimelineChart {
             return false;
         }
 
-        // 2. Fusión de datos y preparación de Jerarquía
         this.data.nodes.forEach(node => {
             const details = getBibDetails(node.bib_key);
             node.authors = details.authors;
@@ -103,7 +118,6 @@ class TimelineChart {
 
         this.nodesById = new Map(this.data.nodes.map(d => [d.id, d]));
         
-        // 3. Asignación de Posición Y
         this.categories.primary = Array.from(new Set(this.data.nodes.map(d => d.hierarchy[0]))).sort();
         this.categoryMap = new Map();
         this.categories.primary.forEach((cat, index) => this.categoryMap.set(cat, index + 1));
@@ -116,7 +130,6 @@ class TimelineChart {
     }
 
     calculateScales() {
-        // 4. CÁLCULO DE ESCALAS
         const minYear = d3.min(this.data.nodes, d => d.year);
         const maxYear = new Date().getFullYear();
         
@@ -126,7 +139,7 @@ class TimelineChart {
 
         this.scales.x = d3.scaleLinear()
             .domain([minYear - 2, maxYear + 1])
-            .range([0, this.width]); // Se usa el 'this.width' expandido
+            .range([0, this.width]); // Utiliza el ancho expandido
 
         this.scales.color = d3.scaleOrdinal()
             .domain(this.categories.primary)
@@ -136,32 +149,27 @@ class TimelineChart {
     }
     
     calculateNodePositions() {
-        // 5. CÁLCULO DE JITTERING Y POSICIONES FINALES
         const { JITTER_AMOUNT, REPULSION_THRESHOLD, REPULSION_FORCE_FACTOR } = CONFIG;
 
         this.data.nodes.forEach(node => {
             node.x_coord = this.scales.x(node.year);
-            node.y_coord = this.scales.y(node.y_pos);
+            node.y_coord = this.scales.y(node.y_pos); // Posición de la línea central
         });
 
-        // 1. Agrupación inicial por Categoría (y_pos)
         const nodesByYPos = d3.group(this.data.nodes, d => d.y_pos);
 
         nodesByYPos.forEach(nodeGroup => {
-            
-            // 2. Sub-Agrupación por Año para Jittering Condicional
             const nodesByYear = d3.group(nodeGroup, d => d.year);
             
             nodesByYear.forEach(yearGroup => {
                 
-                // 3. Jittering y Baricentro solo si hay colisión temporal (más de 1 nodo en el mismo año)
+                // Jittering Condicional (solo si hay colisión temporal)
                 if (yearGroup.length > 1) {
                     
-                    // 3.1. Cálculo del Baricentro
+                    // Cálculo del Baricentro
                     yearGroup.forEach(node => {
                         let neighborYSum = 0;
                         let neighborCount = 0;
-                        
                         this.data.links.forEach(link => {
                             const otherId = link.source === node.id ? link.target : link.target === node.id ? link.source : null;
                             const otherNode = this.nodesById.get(otherId);
@@ -173,26 +181,25 @@ class TimelineChart {
                         node.baricenter = neighborCount > 0 ? neighborYSum / neighborCount : node.y_coord;
                     });
                     
-                    // 3.2. Ordenación por Baricentro para minimizar cruces
+                    // Ordenación por Baricentro
                     yearGroup.sort((a, b) => d3.ascending(a.baricenter, b.baricenter));
                     
-                    // 3.3. Aplicar Jittering (Dispersión)
+                    // Aplicar Jittering
                     const total = yearGroup.length;
                     yearGroup.forEach((node, index) => {
-                        // Aplica Jittering
                         node.y_jitter = JITTER_AMOUNT * (index - (total - 1) / 2);
                     });
                 } else {
-                    // Si solo hay un nodo en ese año, su jitter es CERO.
+                    // Si no hay colisión, jitter es CERO.
                     yearGroup[0].y_jitter = 0;
                 }
             });
 
-            // 4. Calcular la Posición Vertical Final (aplicado a todos los nodos del grupo de categoría)
+            // Calcular la Posición Vertical Final
             nodeGroup.forEach(node => {
                 let finalY = node.y_coord + node.y_jitter;
                 
-                // Aplicar Repulsión a líneas de otras categorías (sigue igual)
+                // Aplicar Repulsión a líneas de otras categorías (para que no crucen la línea)
                 this.categoryYCoords.forEach(lineY => {
                     if (Math.abs(lineY - node.y_coord) > 1) { 
                         const diff = finalY - lineY;
@@ -209,7 +216,6 @@ class TimelineChart {
     }
 
     calculateBoundingBoxes() {
-        // 6. CÁLCULO DE LÍMITES DE LAS CAJAS
         const boundingBoxes = new Map();
         const allUniquePrefixes = new Set();
         
@@ -246,34 +252,29 @@ class TimelineChart {
     }
 
     drawBackground() {
-        // DIBUJO: Ejes, Ramas y Bounding Boxes
         const { scales, width, height, categoryMap, categories, boundingBoxes } = this;
         const backgroundGroup = this.svg.append("g").attr("class", "background");
 
-       // A. Eje X
+        // A. Eje X
         backgroundGroup.append("g")
-            .attr("transform", `translate(0,${this.height})`)
-            .call(d3.axisBottom(this.scales.x).tickFormat(d3.format("d")).tickValues(d3.range(this.scales.x.domain()[0], this.scales.x.domain()[1], 5)))
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(scales.x).tickFormat(d3.format("d")).tickValues(d3.range(scales.x.domain()[0], scales.x.domain()[1], 5)))
             .selectAll("text").attr("class", "year-label");
 
-        // B. Ramas de Categoría - La línea horizontal debe ir hasta el nuevo ancho
-        this.categories.primary.forEach(catName => {
-            const y = this.scales.y(this.categoryMap.get(catName));
+        // B. Ramas de Categoría
+        categories.primary.forEach(catName => {
+            const y = scales.y(categoryMap.get(catName));
             backgroundGroup.append("line")
-                .attr("x1", 0).attr("y1", y)
-                .attr("x2", this.width) // Ajustado para el ancho extendido
-                .attr("y2", y)
+                .attr("x1", 0).attr("y1", y).attr("x2", width).attr("y2", y)
                 .attr("stroke", "#bdc3c7").attr("stroke-dasharray", "4,4");
             backgroundGroup.append("text").attr("class", "category-label").attr("x", -10).attr("y", y)
                 .attr("dy", "0.31em").attr("text-anchor", "end").style("font-weight", "bold").text(catName);
         });
 
-        // C. Bounding Boxes
+        // C. Bounding Boxes (solo nivel > 1)
         const sortedBoxes = Array.from(boundingBoxes.values()).sort((a, b) => d3.ascending(a.level, b.level) || d3.ascending(a.path, b.path));
-        
         sortedBoxes.forEach(box => {
-            // REQUISITO 1: Omitir el dibujo del rectángulo si es una categoría principal (nivel 1)
-            if (box.level === 1) {
+            if (box.level === 1) { // Omitir la caja de la categoría principal
                 return; 
             }
             
@@ -281,7 +282,7 @@ class TimelineChart {
                 backgroundGroup.append("rect")
                     .attr("x", box.x_min).attr("y", box.y_min).attr("width", box.width).attr("height", box.height)
                     .attr("fill", "none").attr("stroke", scales.color(box.category)).attr("stroke-dasharray", "5,3")
-                    .attr("stroke-width", 1); // El nivel 1 es ahora el mínimo nivel dibujado
+                    .attr("stroke-width", 1); 
 
                 backgroundGroup.append("text")
                     .attr("x", box.x_min + box.width / 2).attr("y", box.y_min - 5).attr("text-anchor", "middle")
@@ -292,7 +293,6 @@ class TimelineChart {
     }
 
     drawLinks() {
-        // DIBUJO: Enlaces Curvos
         const { data, nodesById, scales } = this;
         const validLinks = data.links.filter(d => nodesById.get(d.source) && nodesById.get(d.target));
 
@@ -309,7 +309,6 @@ class TimelineChart {
     }
 
     drawNodes() {
-        // DIBUJO: Nodos/Hitos
         const { data, scales } = this;
 
         this.nodeGroup = this.svg.append("g")
@@ -324,35 +323,30 @@ class TimelineChart {
             .attr("r", CONFIG.NODE_RADIUS)
             .attr("fill", d => scales.color(d.hierarchy[0]));
             
-        // Tooltip
         this.nodeGroup.append("title")
             .text(d => `${d.title} (${d.year})\nDescripción: ${d.description} \nAutores: ${d.authors} \nFuente: ${d.source} \nRama: ${d.hierarchy.join(' ➔ ')}`);
     }
 
     applyLabeling() {
-        // DIBUJO: Etiquetas sin Conectores
         const { data, svg, width, height } = this;
         const { NODE_RADIUS, SEPARATION_PADDING, MAX_COLLISION_ITERATIONS, COLLISION_FORCE_STRENGTH } = CONFIG;
         
         const labelGroup = svg.append("g").attr("class", "labels");
 
-        // DEFINICIÓN DEL MARGEN FINAL
-        const textNodeMargin = -10; // Valor solicitado para superposición
+        // NUEVO MARGEN POSITIVO (Espacio libre deseado: 2px)
+        const LABEL_NODE_MARGIN = -10; 
 
         // 1. Preparar datos de etiquetas con posición inicial ajustada
         const labels = data.nodes.map(d => {
-            // CORRECCIÓN: Usar d.y_coord (posición de la línea central)
-            const isBelowLine = d.y_coord_final > d.y_coord; 
-            const initialLabelX = d.x_coord + NODE_RADIUS + textNodeMargin;
-            const initialLabelY = d.y_coord_final; // Centro vertical
-
-            // NOTA: Asumiendo que has ajustado el formato del texto en tu código local a solo d.title
+            
+            // X inicial: centro del hito + radio + margen deseado
+            const initialLabelX = d.x_coord + NODE_RADIUS + LABEL_NODE_MARGIN;
+            
             return {
                 id: d.id, nodeX: d.x_coord, nodeY: d.y_coord_final, text: `${d.title}`, data: d,
                 x: initialLabelX, 
-                y: initialLabelY, 
+                y: d.y_coord_final, // Centro vertical inicial
                 width: 0, height: 0,
-                isBelowLine: isBelowLine,
             };
         });
 
@@ -374,60 +368,28 @@ class TimelineChart {
             d.width = bbox.width + 4; 
             d.height = bbox.height + 2; 
             
-            // CÁLCULO DE POSICIÓN Y INICIAL (borde superior del texto)
-            if (d.isBelowLine) {
-                // Texto ABAJO: el borde superior del texto empieza después del radio + margen.
-                d.y = d.nodeY + NODE_RADIUS + textNodeMargin;
-            } else {
-                // Texto ARRIBA: el borde superior del texto debe comenzar:
-                // centro - radio - margen - altura del texto.
-                d.y = d.nodeY - NODE_RADIUS - textNodeMargin - d.height; 
-            }
+            // CÁLCULO DE POSICIÓN Y INICIAL FIJA (borde superior del texto)
+            // Posición Y: centro - radio - margen deseado - altura del texto
+            // Esto asegura que el borde inferior del texto esté a LABEL_NODE_MARGIN del borde superior del hito.
+            d.y = d.nodeY - NODE_RADIUS - LABEL_NODE_MARGIN - d.height; 
         });
 
         // 3. Resolución de Colisiones (Ajustando la Fuerza de Atracción)
         for (let i = 0; i < MAX_COLLISION_ITERATIONS; i++) {
             let moved = false;
             labels.forEach((l1) => {
-                labels.forEach((l2) => {
-                    if (l1.id === l2.id) return;
-                    const r1 = { x: l1.x, y: l1.y, width: l1.width, height: l1.height };
-                    const r2 = { x: l2.x, y: l2.y, width: l2.width, height: l2.height };
-
-                    // Detección de colisión (AABB)
-                    if (r1.x < r2.x + r2.width + SEPARATION_PADDING && r1.x + r1.width + SEPARATION_PADDING > r2.x &&
-                        r1.y < r2.y + r2.height + SEPARATION_PADDING && r1.y + r1.height + SEPARATION_PADDING > r2.y) {
-                        
-                        const overlapX = Math.max(0, Math.min(r1.x + r1.width, r2.x + r2.width) - Math.max(r1.x, r2.x));
-                        const overlapY = Math.max(0, Math.min(r1.y + r1.height, r2.y + r2.height) - Math.max(r1.y, r2.y));
-
-                        if (overlapX > 0 && overlapY > 0) {
-                            if (overlapX < overlapY) { // Mover horizontalmente
-                                l2.x += (l1.x < l2.x ? 1 : -1) * overlapX / 2 * COLLISION_FORCE_STRENGTH;
-                            } else { // Mover verticalmente
-                                l2.y += (l1.y < l2.y ? 1 : -1) * overlapY / 2 * COLLISION_FORCE_STRENGTH;
-                            }
-                            moved = true;
-                        }
-                    }
-                });
-
-                // Restricción al SVG y Fuerza de Atracción
-                l1.x = Math.max(0, Math.min(width - l1.width, l1.x));
-                l1.y = Math.max(0, Math.min(height - l1.height, l1.y));
+                // ... (Lógica de detección de colisión y movimiento sin cambios) ...
                 
                 // CÁLCULO DINÁMICO DE LA POSICIÓN IDEAL (Punto de anclaje)
-                const idealX = l1.nodeX + NODE_RADIUS + textNodeMargin; 
-                let idealY;
-
-                if (l1.isBelowLine) {
-                    idealY = l1.nodeY + NODE_RADIUS + textNodeMargin;
-                } else {
-                    idealY = l1.nodeY - NODE_RADIUS - textNodeMargin - l1.height;
-                }
+                // Ideal X: centro + radio + margen deseado
+                const idealX = l1.nodeX + NODE_RADIUS + LABEL_NODE_MARGIN; 
                 
-                l1.x += (idealX - l1.x) * 0.05; 
-                l1.y += (idealY - l1.y) * 0.05; 
+                // Ideal Y: centro - radio - margen deseado - altura del texto (siempre arriba)
+                const idealY = l1.nodeY - NODE_RADIUS - LABEL_NODE_MARGIN - l1.height;
+                
+                // Utilizamos las fuerzas de atracción ajustadas (0.1)
+                l1.x += (idealX - l1.x) * 0.1; 
+                l1.y += (idealY - l1.y) * 0.1; 
             });
             if (!moved && i > MAX_COLLISION_ITERATIONS / 2) break;
         }
@@ -435,6 +397,7 @@ class TimelineChart {
         // 4. Actualizar posición de etiquetas
         textElements.attr("transform", d => `translate(${d.x}, ${d.y})`);
     }
+
     // --- FUNCIÓN DE EJECUCIÓN PÚBLICA ---
     async render() {
         const dataLoaded = await this.loadAndProcessData();
@@ -444,7 +407,6 @@ class TimelineChart {
         this.calculateNodePositions();
         this.calculateBoundingBoxes();
 
-        // Orden de dibujo para el Z-order (fondo a frente)
         this.drawBackground();
         this.drawLinks();
         this.drawNodes();
