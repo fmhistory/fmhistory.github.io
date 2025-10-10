@@ -3,14 +3,14 @@
 // CONFIGURACIÓN GLOBAL ESTÁTICA
 const CONFIG = {
     margin: { top: 50, right: 30, bottom: 50, left: 200 },
-    JITTER_AMOUNT: 15,
+    JITTER_AMOUNT: 25, // AUMENTADO: Mayor dispersión vertical de hitos
     BOX_PADDING: 15,
     TEMP_PATH_DELIMITER: '|',
     SEPARATION_PADDING: 5,
     NODE_RADIUS: 6,
     REPULSION_THRESHOLD: 8,
     REPULSION_FORCE_FACTOR: 0.5,
-    DEVIATION_OFFSET: 30, // Offset para enlaces curvos
+    DEVIATION_OFFSET: 50, // AUMENTADO: Curvas más pronunciadas en los enlaces
     MAX_COLLISION_ITERATIONS: 200,
     COLLISION_FORCE_STRENGTH: 0.5,
 };
@@ -157,10 +157,11 @@ class TimelineChart {
             // 5.2. Aplicar Jittering y Repulsión
             const total = nodeGroup.length;
             nodeGroup.forEach((node, index) => {
-                node.y_jitter = JITTER_AMOUNT * (index - (total - 1) / 2);
+                // Se usa el nuevo JITTER_AMOUNT aquí
+                node.y_jitter = JITTER_AMOUNT * (index - (total - 1) / 2); 
                 let finalY = node.y_coord + node.y_jitter;
                 
-                // Aplicar Repulsión a líneas de otras categorías
+                // Aplicar Repulsión a líneas de otras categorías (sigue igual)
                 this.categoryYCoords.forEach(lineY => {
                     if (Math.abs(lineY - node.y_coord) > 1) { 
                         const diff = finalY - lineY;
