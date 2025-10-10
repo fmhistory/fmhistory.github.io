@@ -1,63 +1,109 @@
 {
   "nodes": [
     {
-      "id": "FODA_90",
+      "id": "Neighbors1984_Draco",
+      "year": 1984,
+      "title": "The Draco approach",
+      "description": "The Draco approach",
+      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "bib_key": "Neighbors1984_Draco"
+    },
+    {
+      "id": "Batory1988_GENESIS",
+      "year": 1988,
+      "title": "The GENESIS tool",
+      "description": "The GENESIS tool",
+      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "bib_key": "Batory1988_GENESIS"
+    },
+    {
+      "id": "Lubars1988_ROSE",
+      "year": 1988,
+      "title": "The ROSE reuse system",
+      "description": "The ROSE reuse system (Feature-based selection of components)",
+      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "bib_key": "Lubars1988_ROSE"
+    },
+    {
+      "id": "Biggerstaff1989_ROSE",
+      "year": 1989,
+      "title": "The ROSE reuse system",
+      "description": "The ROSE reuse system (Feature-based selection of components)",
+      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "bib_key": "Biggerstaff1989_ROSE"
+    },
+    {
+      "id": "MooreAndBailin1989_KAPTUR",
+      "year": 1989,
+      "title": "The KAPTUR system",
+      "description": "The KAPTUR system.",
+      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "bib_key": "MooreAndBailin1989_KAPTUR"
+    },
+    {
+      "id": "Kang1990_FODA",
       "year": 1990,
-      "title": "FODA (Feature Diagram)",
-      "path": "Fundamentos.Modelos", 
-      "bib_key": "Kang1990FODA"
+      "title": "FODA",
+      "description": "Feature-Oriented Domain Analysis (FODA), Feature diagram",
+      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "bib_key": "Kang1990_FODA"
     },
     {
       "id": "Logic_01",
       "year": 2001,
       "title": "Formalización Lógica (SAT)",
-      "path": "Fundamentos.Análisis.SAT",
+      "hierarchy": ["I. Fundamentos", "Análisis Formal", "SAT Solvers"],
       "bib_key": "Batory2001Generative"
     },
     {
       "id": "CFM_05",
       "year": 2005,
       "title": "Cardinality FMs (CFMs)",
-      "path": "Expresividad",
+      "hierarchy": ["Expresivity"],
       "bib_key": "Czarnecki2005CFM"
     },
     {
       "id": "AFM_05",
       "year": 2005,
       "title": "Attributed FMs (AFMs)",
-      "path": "Expresividad",
+      "hierarchy": ["Expresivity"],
       "bib_key": "Thiel2005AFM"
     },
     {
       "id": "Testing_05",
       "year": 2005,
       "title": "Testing de SPL (Hito Jitter)",
-      "path": "Expresividad",
+      "hierarchy": ["Expresivity"],
       "bib_key": "Engels2005Testing"
     },
     {
       "id": "Dead_07",
       "year": 2007,
       "title": "Análisis de Propiedades (Dead Features)",
-      "path": "Fundamentos.Análisis.SAT",
+      "hierarchy": ["I. Fundamentos", "Análisis Formal", "SAT Solvers"],
       "bib_key": "Benavides2007Dead"
     },
     {
       "id": "Config_09",
       "year": 2009,
       "title": "Configuración Basada en CSP",
-      "path": "Fundamentos.Análisis.CSP",
+      "hierarchy": ["I. Fundamentos", "Análisis Formal", "CSP Solvers"],
       "bib_key": "Mendoca2009Config"
     },
     {
       "id": "Mining_14",
       "year": 2014,
       "title": "Feature Mining (Extracción automática)",
-      "path": "Evolución",
+      "hierarchy": ["IV. Evolución"],
       "bib_key": "López14Mining"
     }
   ],
   "links": [
+    { "source": "Neighbors1984_Draco", "target": "Kang1990_FODA" },
+    { "source": "Batory1988_GENESIS", "target": "Kang1990_FODA" },
+    { "source": "Lubars1988_ROSE", "target": "Biggerstaff1989_ROSE" },
+    { "source": "Biggerstaff1989_ROSE", "target": "Kang1990_FODA" },
+    { "source": "MooreAndBailin1989_KAPTUR", "target": "Kang1990_FODA" },
     { "source": "FODA_90", "target": "Logic_01" },
     { "source": "Logic_01", "target": "CFM_05" },
     { "source": "Logic_01", "target": "AFM_05" },

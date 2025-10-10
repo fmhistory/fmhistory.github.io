@@ -8,15 +8,15 @@ const svg = svgElement.append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
 const JITTER_AMOUNT = 15; // Desplazamiento vertical entre hitos en la misma posición (jittering)
-const PATH_DELIMITER = '.'; // Separador usado en el campo 'path' (e.g., "Fundamentos.Análisis.SAT")
 const BOX_PADDING = 15; // Espacio de relleno alrededor de los nodos dentro de la caja
 let yPosScale, xScale, colorScale; // Variables de escala
 
 // --- FUNCIONES DE ASISTENCIA ---
 
 // Función stub para obtener los detalles de la referencia BibTeX
+// NOTA: Reemplaza esto con tu lógica real de carga y parseo de references.bib
 const getBibDetails = (bibKey) => {
-    // Datos de ejemplo: DEBE SER REEMPLAZADO por la lógica de carga de references.bib
+    // Datos de ejemplo: DEBE SER REEMPLAZADO
     const details = {
         "Kang1990FODA": { "authors": "Kang et al.", "source": "SEI Tech Report" },
         "Batory2001Generative": { "authors": "Batory et al.", "source": "Generative Prog. Book" },
@@ -48,17 +48,25 @@ async function loadData() {
         return; 
     }
     
+    // Usaremos un separador temporal para simplificar el mapeo interno
+    const TEMP_PATH_DELIMITER = '|'; 
+
     // 2. FUSIÓN DE DATOS (Añadir detalles BibTeX)
     data.nodes.forEach(node => {
         const details = getBibDetails(node.bib_key);
         node.authors = details.authors;
         node.source = details.source;
+        
+        // Asignar jerarquía si falta (seguridad)
+        if (!node.hierarchy || node.hierarchy.length === 0) {
+            node.hierarchy = ["Sin Categoría"];
+        }
     });
 
     // 3. ASIGNACIÓN AUTOMÁTICA DE POSICIÓN Y Y PREPARACIÓN DE BOUNDING BOXES
     
-    const allPaths = data.nodes.map(d => d.path.split(PATH_DELIMITER));
-    const primaryCategories = Array.from(new Set(allPaths.map(p => p[0]))).sort();
+    // Obtener las categorías principales (Nivel 1 del array hierarchy)
+    const primaryCategories = Array.from(new Set(data.nodes.map(d => d.hierarchy[0]))).sort();
     
     // 3.1. Mapeo de Categoría Principal (Posición Base Numérica)
     const categoryMap = new Map();
@@ -66,11 +74,11 @@ async function loadData() {
         categoryMap.set(cat, index + 1); 
     });
 
-    // 3.2. Asignar la posición Y base
+    // 3.2. Asignar la posición Y base y crear el path interno
     data.nodes.forEach(node => {
-        const primaryCat = node.path.split(PATH_DELIMITER)[0];
+        const primaryCat = node.hierarchy[0];
         node.y_pos = categoryMap.get(primaryCat); // Esta es la posición Y base de la línea
-        node.full_path = node.path; 
+        node.full_path = node.hierarchy.join(TEMP_PATH_DELIMITER); 
     });
 
 
@@ -86,7 +94,7 @@ async function loadData() {
         .domain([minYear - 2, maxYear + 1])
         .range([0, width]);
 
-    const colorDomain = Array.from(new Set(data.nodes.map(d => d.path.split(PATH_DELIMITER)[0])));
+    const colorDomain = primaryCategories;
     colorScale = d3.scaleOrdinal()
         .domain(colorDomain)
         .range(d3.schemeCategory10);
@@ -103,7 +111,6 @@ async function loadData() {
             const total = group.length;
             if (total > 1) {
                 const index = group.indexOf(node);
-                // Calcula el jittering para separar hitos en la misma línea principal y año
                 node.y_jitter = JITTER_AMOUNT * (index - (total - 1) / 2);
             } else {
                 node.y_jitter = 0;
@@ -114,31 +121,49 @@ async function loadData() {
     });
     
     // 6. CÁLCULO FINAL DE LÍMITES DE LAS CAJAS (Bounding Boxes)
-    const boundingBoxes = new Map(); 
-    const nodesByFullPath = d3.group(data.nodes, d => d.full_path);
-    
-    nodesByFullPath.forEach((nodesInBranch, fullPath) => {
-        const pathParts = fullPath.split(PATH_DELIMITER);
+
+    const boundingBoxes = new Map();
+    const allUniquePrefixes = new Set(); 
+
+    // Paso 6.1: Identificar TODOS los prefijos posibles para el anidamiento
+    data.nodes.forEach(node => {
+        let currentPathParts = [];
+        // Genera A, A|B, A|B|C, etc.
+        node.hierarchy.forEach(part => {
+            currentPathParts.push(part);
+            const currentPath = currentPathParts.join(TEMP_PATH_DELIMITER);
+            allUniquePrefixes.add(currentPath);
+        });
+    });
+
+    // Paso 6.2: Calcular los límites de cada caja
+    allUniquePrefixes.forEach(fullPath => {
+        
+        const pathParts = fullPath.split(TEMP_PATH_DELIMITER);
         const primaryCat = pathParts[0];
-        
-        // La posición Y de un nodo es: yPosScale(d.y_pos) + d.y_jitter
-        
-        const box = {
-            path: fullPath,
-            name: pathParts.join(' ➔ '),
-            category: primaryCat,
-            level: pathParts.length,
-            nodes: nodesInBranch,
+
+        // Filtra los nodos que pertenecen a este prefijo (A|B contiene todos los nodos A|B|C y A|B|D)
+        const nodesInPrefix = data.nodes.filter(d => d.full_path.startsWith(fullPath));
+
+        if (nodesInPrefix.length > 0) {
             
-            x_min: d3.min(nodesInBranch, d => xScale(d.year)) - BOX_PADDING,
-            x_max: d3.max(nodesInBranch, d => xScale(d.year)) + BOX_PADDING,
-            y_min: d3.min(nodesInBranch, d => yPosScale(d.y_pos) + d.y_jitter) - BOX_PADDING,
-            y_max: d3.max(nodesInBranch, d => yPosScale(d.y_pos) + d.y_jitter) + BOX_PADDING
-        };
-        box.width = box.x_max - box.x_min;
-        box.height = box.y_max - box.y_min;
-        
-        boundingBoxes.set(fullPath, box);
+            const box = {
+                path: fullPath,
+                name: pathParts[pathParts.length - 1], // Último nivel para la etiqueta
+                category: primaryCat,
+                level: pathParts.length, 
+                
+                // Cálculo de límites basado en todos los nodos descendientes (anidamiento)
+                x_min: d3.min(nodesInPrefix, d => xScale(d.year)) - BOX_PADDING,
+                x_max: d3.max(nodesInPrefix, d => xScale(d.year)) + BOX_PADDING,
+                y_min: d3.min(nodesInPrefix, d => yPosScale(d.y_pos) + d.y_jitter) - BOX_PADDING,
+                y_max: d3.max(nodesInPrefix, d => yPosScale(d.y_pos) + d.y_jitter) + BOX_PADDING
+            };
+            box.width = box.x_max - box.x_min;
+            box.height = box.y_max - box.y_min;
+            
+            boundingBoxes.set(fullPath, box);
+        }
     });
 
 
@@ -172,11 +197,14 @@ async function loadData() {
     });
 
     // 2. Dibuja las Bounding Boxes (Cajas Punteadas) y sus etiquetas
-    // Ordenamos para dibujar los niveles más altos (cajas grandes) primero
-    const sortedBoxes = Array.from(boundingBoxes.values()).sort((a, b) => d3.ascending(b.level, a.level));
+    // ORDEN CLAVE: Ordenamos por nivel ASCENDENTE (1, 2, 3...) para dibujar las cajas GRANDES primero
+    const sortedBoxes = Array.from(boundingBoxes.values()).sort((a, b) => {
+        const levelOrder = d3.ascending(a.level, b.level);
+        if (levelOrder !== 0) return levelOrder;
+        return d3.ascending(a.path, b.path);
+    });
 
     sortedBoxes.forEach(box => {
-        // La caja se dibuja para cualquier nivel (incluso el nivel 1)
         if (box.width > 0 && box.height > 0) { 
             
             // Dibuja el rectángulo punteado
@@ -188,7 +216,7 @@ async function loadData() {
                 .attr("fill", "none")
                 .attr("stroke", colorScale(box.category))
                 .attr("stroke-dasharray", "5,3")
-                .attr("stroke-width", box.level === 1 ? 2 : 1); // Más grueso para Categoría Principal
+                .attr("stroke-width", box.level === 1 ? 2 : 1); 
 
             // Dibuja la etiqueta de la caja (en la parte superior centrada)
             svg.append("text")
@@ -198,7 +226,7 @@ async function loadData() {
                 .style("font-size", "12px")
                 .style("font-style", "italic")
                 .style("fill", colorScale(box.category))
-                .text(box.name);
+                .text(box.name); // Usamos box.name (último nivel)
         }
     });
 
@@ -215,12 +243,11 @@ async function loadData() {
         .data(validLinks)
         .join("line")
         .attr("class", "link")
-        // Posición Y es: yPosScale(d.y_pos) + d.y_jitter
         .attr("x1", d => xScale(getNode(d.source).year))
         .attr("y1", d => yPosScale(getNode(d.source).y_pos) + getNode(d.source).y_jitter)
         .attr("x2", d => xScale(getNode(d.target).year))
         .attr("y2", d => yPosScale(getNode(d.target).y_pos) + getNode(d.target).y_jitter)
-        .attr("stroke", d => colorScale(getNode(d.target).full_path.split(PATH_DELIMITER)[0]));
+        .attr("stroke", d => colorScale(getNode(d.target).hierarchy[0]));
 
 
     // D. Nodos (Nodes)
@@ -230,13 +257,12 @@ async function loadData() {
         .data(data.nodes)
         .join("g")
         .attr("class", "node")
-        // Posición Y es: yPosScale(d.y_pos) + d.y_jitter
         .attr("transform", d => `translate(${xScale(d.year)}, ${yPosScale(d.y_pos) + d.y_jitter})`);
 
     // Círculos de los hitos
     nodeGroup.append("circle")
         .attr("r", 6)
-        .attr("fill", d => colorScale(d.full_path.split(PATH_DELIMITER)[0]));
+        .attr("fill", d => colorScale(d.hierarchy[0]));
 
     // Etiquetas de los hitos (Título y Año)
     nodeGroup.append("text")
@@ -244,12 +270,12 @@ async function loadData() {
         .attr("dy", 3)
         .text(d => `${d.title} (${d.year})`)
         .style("text-anchor", "start")
-        // ROTACIÓN DE TEXTO: Evita el solapamiento horizontal
         .attr("transform", "rotate(-25)"); 
 
     // Tooltip
     nodeGroup.append("title")
-        .text(d => `${d.title} (${d.year}) \nAutores: ${d.authors} \nFuente: ${d.source} \nRama: ${d.full_path}`);
+        // AÑADIDO: Incluye d.description en la primera línea.
+        .text(d => `${d.title} (${d.year})\nDescripción: ${d.description || 'N/A'} \nAutores: ${d.authors} \nFuente: ${d.source} \nRama: ${d.hierarchy.join(' ➔ ')}`);
 }
 
 // Iniciar la carga de datos
