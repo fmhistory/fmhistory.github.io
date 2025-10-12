@@ -41,18 +41,59 @@ const CONFIG = {
     TEMP_PATH_DELIMITER: '|', // Carácter usado internamente para concatenar la jerarquía de categorías.
 };
 
+
+// Mapa para que el modal muestre el tipo de publicación
+const typesMap = {
+        journal: 'Journal',
+        conference: 'International conference',
+        workshop: 'International workshop',
+        national: 'National conference',
+        dataArtifacts: 'Data and artifacts',
+        book: 'Books and PhD thesis',
+        editorship: 'Editorship',
+        other: 'Informal and other publications' // Otros tipos
+    };
+
 // --- FUNCIONES DE ASISTENCIA (Helpers) ---
 
 const processBibEntry = (entry) => {
     const tags = entry.entryTags;
+    const booktitle = normalizeAccents(tags.booktitle || '');
+    const year = parseInt(tags.year);
+    const icoreRanking = booktitle ? getICORERanking(booktitle, getAcronymOrTruncate(booktitle, 50), year) : null;
+    const isWorkshop = booktitle.toLowerCase().includes('workshop') || booktitle.toLowerCase().includes(' ws ');
+    const entryType = entry.entryType.toLowerCase();
+    const journal = normalizeAccents(tags.journal || '');
+    const publisher = tags.publisher || '';
+    const isNational = tags.scope === 'national' || '';
+    const publicationType = getEntryType(entryType, journal, booktitle, isNational, isWorkshop, publisher);
+    const authors = getAuthors(tags.author || '');
+    
     return {
-        // Mapeo de campos relevantes.
-        // Se usa 'author' o 'Authors' para asegurar compatibilidad.
-        authors: tags.author || tags.Authors || "N/A", 
-        // Se usa 'booktitle' o 'journal' para identificar la fuente (Conferencia/Revista).
-        source: tags.booktitle || tags.journal || tags.Source || "N/A", 
-        // El entryType será fundamental para el color (ARTICLE, INPROCEEDINGS, etc.)
-        type: entry.entryType, 
+        type: publicationType,
+        authors: authors,
+        pubtitle: normalizeAccents(tags.title) || '',
+        journal: journal,
+        booktitle: booktitle,
+        quartile: getQuartile(tags.jcr !== undefined ? tags.jcr : '?'),
+        jcr: tags.jcr || '',
+        icore: icoreRanking?.rank || null,
+        acronym: entryType === 'book' ? 'Book' : (entryType === 'phdthesis' ? 'PhD Thesis' : (publicationType === 'dataArtifacts' ? publisher : getAcronymOrTruncate(journal || booktitle || '', 25))),
+        track: capitalizeFirstLetter(tags.track) || '',
+        awards: tags.awards ? tags.awards.split(',').map(a => a.trim()) : [],
+        notes: tags.note || '',
+        doi: formatDoiUrl(tags.doi || tags.url || ''),
+        year: year,
+        month: tags.month?.charAt(0).toUpperCase() + tags.month?.slice(1) || null,
+        date: tags.month && year ? `${year}-${getMonthNumber(tags.month)}-01` : `${year}-01-01`,
+        publisher: normalizeAccents(publisher) || null,
+        abstract: tags.abstract || '',
+        keywords: tags.keywords ? tags.keywords.split(',').map(k => k.trim()).join(', ') : '',
+        address: tags.address || '',
+        volume: tags.volume || '',
+        calification: tags.calification || '',
+        pages: tags.pages || '',
+        bibtexContent: generateBibtex(entry),
     };
 };
 
@@ -138,12 +179,17 @@ class TimelineChart {
         this.data.nodes.forEach(node => {
             const details = bibMap.get(node.id);
             if (details) {
-                node.authors = details.authors;
-                node.source = details.source;
-                node.pub_type = details.type;
+                // *** SOLUCIÓN: Copia todas las propiedades de 'details' a 'node' ***
+                Object.assign(node, details); 
+                
+                // El objeto 'node' ahora tiene authors, source, pub_type, doi,
+                // y cualquier otro campo que viniera en 'details'.
+                
             } else {
                 console.warn(`Clave BibTeX no encontrada: ${node.id}`);
                 node.authors = node.source = node.pub_type = "Desconocido";
+                // Si tienes otros campos esenciales que podrían faltar, inicialízalos aquí
+                node.doi = ""; 
             }
             node.hierarchy = node.hierarchy && node.hierarchy.length > 0 ? node.hierarchy : ["Sin Categoría"];
             node.full_path = node.hierarchy.join(CONFIG.TEMP_PATH_DELIMITER);
@@ -392,7 +438,15 @@ class TimelineChart {
 
         this.nodeGroup.append("circle")
             .attr("r", CONFIG.NODE_RADIUS)
-            .attr("fill", d => scales.color(d.hierarchy[0]));
+            .attr("fill", d => scales.color(d.hierarchy[0]))
+            // AÑADIR EL EVENTO CLICK AQUÍ
+            .on("click", (event, d) => {
+                // Previene que el evento se propague si fuera necesario
+                event.stopPropagation(); 
+                
+                // Llamar al nuevo método del modal
+                this.showPublicationModal(d);
+            });
             
         this.nodeGroup.append("title")
             .text(d => `${d.title} (${d.year})\nDescripción: ${d.description} \nAutores: ${d.authors} \nFuente: ${d.source} \nRama: ${d.hierarchy.join(' ➔ ')}`);
@@ -469,6 +523,67 @@ class TimelineChart {
         textElements.attr("transform", d => `translate(${d.x}, ${d.y})`);
     }
 
+    showPublicationModal(d) {
+         // 1. Obtener la referencia del modal
+        const myModal = new bootstrap.Modal(document.getElementById('publicationModal'));
+
+        // 2. Preparar el contenido
+        const modalBody = d3.select("#publicationModal .modal-body");
+        const urlValue = d.doi || d.url;
+        const linkText = urlValue || '-';
+        const textReference = `${d.authors}. ${d.title}.${d.journal || d.booktitle ? ` ${d.journal || d.booktitle},` : ''} ${d.year}. ${d.volume ? `${d.volume}:` : ''}${d.pages ? ` ${d.pages.replace(/--/, '-')}.` : ''}${d.address ? ` ${d.address}.` : ''} ${d.doi ? `${d.doi}` : d.url ? `${d.url}` : ''}${d.awards && d.awards.length > 0 ? ` ${d.awards.map(i => ` «${i}»`).join(', ')}` : ''}`;
+        // 3. Rellenar el contenido HTML
+        modalBody.html(`
+            <p><strong>Type:</strong> ${typesMap[d.type]}</p>
+                <p><strong>Authors (${d.authorPosition}):</strong> ${d.authors}</p>
+                <p><strong>Title:</strong> ${d.title}</p>
+                ${d.journal ? `<p><strong>Journal:</strong> ${d.journal}</p>` : ''} 
+                ${d.booktitle ? `<p><strong>Conference:</strong> ${d.booktitle}</p>` : ''}
+                ${d.volume ? `<p><strong>Volume:</strong> ${d.volume}</p>` : ''}
+                <p><strong>Year:</strong> ${d.month ? d.month : ''} ${d.year}</p>
+                ${d.address ? `<p><strong>Address:</strong> ${d.address}</p>` : ''}
+                ${d.jcr ? `<p><strong>JCR:</strong> ${d.jcr}</p>` : ''}
+                ${d.icore ? `<p><strong>ICORE:</strong> ${d.icore === '-' ? 'No indexed' : d.icore}</p>` : ''}
+                ${d.calification ? `<p><strong>Calification:</strong> ${d.calification}</p>` : ''}
+                ${d.publisher ? `<p><strong>Publisher:</strong> ${d.publisher}<p>` : ''}
+                ${d.awards && d.awards.length > 0 ? `<p><strong>Awards:</strong> ${d.awards.map(i => `${d.type === 'book' ? '🏅' : '🏆'} ${i}`).join(', ')}</p>` : ''}
+                ${d.notes ? `<p><strong>Notes:</strong> ${d.notes.split(',').map(i => `${iconMeaningMap[i.trim().toLowerCase()]} ${iconMap[i.trim().toLowerCase()]}` || '').join(", ")}</p>` : ''}
+                <p><strong>DOI/Handle/URL:</strong> <a href="${urlValue}" target="_blank" rel="noopener noreferrer">${linkText}</a></p>
+                ${d.abstract ? `<p><strong>Abstract:</strong> ${d.abstract}</p>` : ''}
+                ${d.keywords ? `<p><strong>Keywords:</strong> ${d.keywords}</p>` : ''}
+                <hr style="border-top: 1px solid #ccc;">
+                <p><strong>Reference:</strong>
+                ${textReference}
+                <div class="d-flex justify-content-center mt-3">
+                    <button type="button" class="btn btn-outline-dark me-2" id="copyTextBtn">🏷️ Copy Reference</button>
+                    <button type="button" class="btn btn-outline-dark" id="copyBibBtn">🗎 Copy BibTeX</button>
+                </div>
+        `);
+
+        // 4. Adjuntar Event Listeners a los botones (¡Deben estar dentro de la función!)
+        // Nota: Asegúrate de que el campo 'bibtexContent' esté adjunto al nodo si quieres que funcione
+        // (Actualmente, tu lógica de carga no adjunta el bibtexContent completo del hito al nodo)
+        
+        // A. Listener para Copiar Referencia
+        document.getElementById("copyTextBtn").addEventListener("click", () => {
+            navigator.clipboard.writeText(textReference)
+                .then(() => alert("Referencia copiada al portapapeles!"))
+                .catch(err => console.error("Fallo al copiar texto: ", err));
+        });
+
+        // B. Listener para Copiar BibTeX
+        document.getElementById("copyBibBtn").addEventListener("click", () => {
+            // Nota: d.bibtexContent debe ser la cadena BibTeX completa para ese hito.
+            // Si no la has guardado, esto no funcionará.
+            navigator.clipboard.writeText(d.bibtexContent || "Contenido BibTeX no disponible")
+                .then(() => alert("BibTeX copiado al portapapeles!"))
+                .catch(err => console.error("Fallo al copiar BibTeX: ", err));
+        });
+        
+        // 5. Mostrar el modal
+        myModal.show();
+    }
+    
     // --- FUNCIÓN DE EJECUCIÓN PÚBLICA ---
     async render() {
         const dataLoaded = await this.loadAndProcessData();
