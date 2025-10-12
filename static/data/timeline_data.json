@@ -6,8 +6,7 @@
       "title": "Draco",
       "longtitle": "The Draco approach",
       "description": "The Draco approach to constructing software from reusable components.",
-      "hierarchy": ["Fundamentals", "Feature model's origins"],
-      "bib_key": "Neighbors1984_Draco"
+      "hierarchy": ["Fundamentals", "Feature model's origins"]
     },
     {
       "id": "Lubars1988_ROSE",
@@ -15,8 +14,8 @@
       "title": "ROSE",
       "longtitle": "The ROSE reuse system",
       "description": "Wide-spectrum support for software reusability.The ROSE tool supported 'feature-based selection' of components. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
-      "hierarchy": ["Fundamentals", "Feature model's origins"],
-      "bib_key": "Lubars1988_ROSE"
+      "concepts": ["Feature-based selection of components"],
+      "hierarchy": ["Fundamentals", "Feature model's origins"]
     },
     {
       "id": "Biggerstaff1989_ROSE",
@@ -24,8 +23,8 @@
       "title": "ROSE",
       "longtitle": "The ROSE reuse system",
       "description": "Design recovery for maintenance and reuse. The ROSE tool supported 'feature-based selection' of components. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
-      "hierarchy": ["Fundamentals", "Feature model's origins"],
-      "bib_key": "Biggerstaff1989_ROSE"
+      "concepts": ["Feature-based selection of components"],
+      "hierarchy": ["Fundamentals", "Feature model's origins"]
     },
         {
       "id": "Batory1988_GENESIS",
@@ -33,8 +32,7 @@
       "title": "GENESIS",
       "longtitle": "The GENESIS tool",
       "description": "GENESIS: an extensible database management system.",
-      "hierarchy": ["Fundamentals", "Feature model's origins"],
-      "bib_key": "Batory1988_GENESIS"
+      "hierarchy": ["Fundamentals", "Feature model's origins"]
     },
     {
       "id": "Moore1989_KAPTUR",
@@ -42,8 +40,8 @@
       "title": "KAPTUR",
       "longtitle": "The KAPTUR system",
       "description": "The KAPTUR Environment: An Operations Concept. The KAPTUR system used 'distinctive features' to distinguish systems within a domain. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
-      "hierarchy": ["Fundamentals", "Feature model's origins"],
-      "bib_key": "Moore1989_KAPTUR"
+      "concepts": ["Distinctive features"],
+      "hierarchy": ["Fundamentals", "Feature model's origins"]
     },
     {
       "id": "Kang1990_FODA",
@@ -52,56 +50,89 @@
       "longtitle": "Feature-Oriented Domain Analysis (FODA)",
       "description": "Feature modeling was originally proposed as part of the Feature-Oriented Domain Analysis (FODA) method. Historically, FODA builds on, among others, Neighbors's work on Draco, and Batory's domain analysis of DBMS and the Genesis tool.",
       "concepts": ["Feature model", "Feature diagram"],
-      "hierarchy": ["Fundamentals", "Feature model's origins"],
-      "bib_key": "Kang1990_FODA"
+      "hierarchy": ["Fundamentals", "Feature model's origins"]
+    },
+    {
+      "id": "Kang1998_FORM",
+      "year": 1998,
+      "title": "FORM",
+      "longtitle": "Feature-Oriented Reuse Method (FORM)",
+      "description": "FORM is a feature-oriented reuse method that provides domain-specific reference architectures.",
+      "hierarchy": ["Fundamentals", "FODA extensions"]
+    },
+    {
+      "id": "Griss1998_RSEB",
+      "year": 1998,
+      "title": "RSEB",
+      "longtitle": "Reusable Software Engineering Base (RSEB)",
+      "description": "Integrating feature modeling with the RSEB.",
+      "hierarchy": ["Fundamentals", "FODA extensions"]
+    },
+    {
+      "id": "Czarnecki2000_GenerativeProgramming",
+      "year": 2000,
+      "title": "Generative Programming",
+      "longtitle": "Generative Programming: Methods, Tools, and Applications",
+      "description": "Generative programming is a software engineering paradigm aimed at improving productivity and quality by using automated techniques to generate software artifacts.",
+      "hierarchy": ["Fundamentals", "FODA extensions"]
+    },
+    {
+      "id": "Benavides2005_AutomatedReasoning",
+      "year": 2005,
+      "title": "Automated Reasoning on Feature Models",
+      "longtitle": "Automated Reasoning on Feature Models",
+      "description": "This work focuses on the automated reasoning techniques applied to feature models.",
+      "hierarchy": ["Automated Analysis"]
+    },
+    {
+      "id": "Batory2004_AHEAD",
+      "year": 2004,
+      "title": "AHEAD",
+      "longtitle": "Feature-oriented programming (FOP) and the AHEAD tool suite",
+      "description": "This work focuses on feature-oriented programming and the AHEAD tool suite.",
+      "concepts": ["Feature-oriented programming (FOP)", "AHEAD"],
+      "hierarchy": ["Variability Implementation", "Feature-oriented programming (FOP)"]
     },
     {
       "id": "Logic_01",
       "year": 2001,
-      "title": "Formalización Lógica (SAT)",
-      "hierarchy": ["Fundamentals", "Análisis Formal", "SAT Solvers"],
+      "title": "Dummy milestone",
+      "hierarchy": ["Automated Analysis", "SAT Solvers"],
       "bib_key": "Batory2001Generative"
     },
     {
       "id": "CFM_05",
       "year": 2005,
-      "title": "Cardinality FMs (CFMs)",
-      "hierarchy": ["Expresivity"],
+      "title": "Dummy milestone",
+      "hierarchy": ["Fundamentals", "Expresivity"],
       "bib_key": "Czarnecki2005CFM"
     },
     {
       "id": "AFM_05",
       "year": 2005,
       "title": "Attributed FMs (AFMs)",
-      "hierarchy": ["Expresivity"],
+      "hierarchy": ["Fundamentals", "Expresivity"],
       "bib_key": "Thiel2005AFM"
-    },
-    {
-      "id": "Testing_05",
-      "year": 2005,
-      "title": "Testing de SPL (Hito Jitter)",
-      "hierarchy": ["Expresivity"],
-      "bib_key": "Engels2005Testing"
     },
     {
       "id": "Dead_07",
       "year": 2007,
-      "title": "Análisis de Propiedades (Dead Features)",
-      "hierarchy": ["Fundamentals", "Análisis Formal", "SAT Solvers"],
+      "title": "Dummy",
+      "hierarchy": ["Evolution and Maintenance"],
       "bib_key": "Benavides2007Dead"
     },
     {
       "id": "Config_09",
       "year": 2009,
-      "title": "Configuración Basada en CSP",
-      "hierarchy": ["Fundamentals", "Análisis Formal", "CSP Solvers"],
+      "title": "Dummy",
+      "hierarchy": ["Configuration"],
       "bib_key": "Mendoca2009Config"
     },
     {
       "id": "Mining_14",
       "year": 2014,
       "title": "Feature Mining (Extracción automática)",
-      "hierarchy": ["IV. Evolución"],
+      "hierarchy": ["Variability modeling"],
       "bib_key": "López14Mining"
     }
   ],
@@ -111,9 +142,10 @@
     { "source": "Lubars1988_ROSE", "target": "Biggerstaff1989_ROSE" },
     { "source": "Biggerstaff1989_ROSE", "target": "Kang1990_FODA" },
     { "source": "MooreAndBailin1989_KAPTUR", "target": "Kang1990_FODA" },
-    { "source": "Kang1990_FODA", "target": "Logic_01" },
-    { "source": "Logic_01", "target": "CFM_05" },
-    { "source": "Logic_01", "target": "AFM_05" },
-    { "source": "Logic_01", "target": "Testing_05" }
+    { "source": "Kang1990_FODA", "target": "Kang1998_FORM" },
+    { "source": "Kang1990_FODA", "target": "Griss1998_RSEB" },
+    { "source": "Kang1990_FODA", "target": "Czarnecki2000_GenerativeProgramming" }
+
+
   ]
 }
