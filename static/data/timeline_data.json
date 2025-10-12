@@ -2,7 +2,6 @@
   "nodes": [
     {
       "id": "Neighbors1984_Draco",
-      "year": 1984,
       "title": "Draco",
       "longtitle": "The Draco approach",
       "description": "The Draco approach to constructing software from reusable components.",
@@ -10,7 +9,6 @@
     },
     {
       "id": "Lubars1988_ROSE",
-      "year": 1988,
       "title": "ROSE",
       "longtitle": "The ROSE reuse system",
       "description": "Wide-spectrum support for software reusability.The ROSE tool supported 'feature-based selection' of components. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
@@ -19,7 +17,6 @@
     },
     {
       "id": "Biggerstaff1989_ROSE",
-      "year": 1989,
       "title": "ROSE",
       "longtitle": "The ROSE reuse system",
       "description": "Design recovery for maintenance and reuse. The ROSE tool supported 'feature-based selection' of components. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
@@ -28,7 +25,6 @@
     },
         {
       "id": "Batory1988_GENESIS",
-      "year": 1988,
       "title": "GENESIS",
       "longtitle": "The GENESIS tool",
       "description": "GENESIS: an extensible database management system.",
@@ -36,7 +32,6 @@
     },
     {
       "id": "Moore1989_KAPTUR",
-      "year": 1989,
       "title": "KAPTUR",
       "longtitle": "The KAPTUR system",
       "description": "The KAPTUR Environment: An Operations Concept. The KAPTUR system used 'distinctive features' to distinguish systems within a domain. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
@@ -45,7 +40,6 @@
     },
     {
       "id": "Kang1990_FODA",
-      "year": 1990,
       "title": "FODA",
       "longtitle": "Feature-Oriented Domain Analysis (FODA)",
       "description": "Feature modeling was originally proposed as part of the Feature-Oriented Domain Analysis (FODA) method. Historically, FODA builds on, among others, Neighbors's work on Draco, and Batory's domain analysis of DBMS and the Genesis tool.",
@@ -54,23 +48,20 @@
     },
     {
       "id": "Kang1998_FORM",
-      "year": 1998,
       "title": "FORM",
       "longtitle": "Feature-Oriented Reuse Method (FORM)",
       "description": "FORM is a feature-oriented reuse method that provides domain-specific reference architectures.",
       "hierarchy": ["Fundamentals", "FODA extensions"]
     },
     {
-      "id": "Griss1998_RSEB",
-      "year": 1998,
-      "title": "RSEB",
-      "longtitle": "Reusable Software Engineering Base (RSEB)",
+      "id": "Griss1998_FeatuRSEB",
+      "title": "FeatuRSEB",
+      "longtitle": "Reusable Software Engineering Base (FeatuRSEB)",
       "description": "Integrating feature modeling with the RSEB.",
       "hierarchy": ["Fundamentals", "FODA extensions"]
     },
     {
       "id": "Czarnecki2000_GenerativeProgramming",
-      "year": 2000,
       "title": "Generative Programming",
       "longtitle": "Generative Programming: Methods, Tools, and Applications",
       "description": "Generative programming is a software engineering paradigm aimed at improving productivity and quality by using automated techniques to generate software artifacts.",
@@ -78,15 +69,14 @@
     },
     {
       "id": "Benavides2005_AutomatedReasoning",
-      "year": 2005,
-      "title": "Automated Reasoning on Feature Models",
+      "title": "Automated Reasoning on FMs",
       "longtitle": "Automated Reasoning on Feature Models",
-      "description": "This work focuses on the automated reasoning techniques applied to feature models.",
-      "hierarchy": ["Automated Analysis"]
+      "description": "A major historical milestone as the first proposal to successfully model and reason on both functional and extra-functional features (i.e., quality or non-functional features) within a single feature model. Its key importance lies in introducing Constraint Programming (CP) and Constraint Satisfaction Optimization Problems (CSOP) as the formal foundation for automated analysis, alongside Propositional Logic. This work extended traditional FMs to include measurable attributes and attribute-based constraints. Furthermore, it generalized the capabilities of automated reasoning by defining a suite of five core operations (counting, filtering, listing products, validation, and optimization) that were more advanced than previous limited attempts. This established the paradigm for product-line optimization based on quality attributes like cost or development time.",
+      "concepts": ["Attributed feature models", "Extended feature models"],
+      "hierarchy": ["Automated Analysis", "Constraint programming based analyses"]
     },
     {
       "id": "Batory2004_AHEAD",
-      "year": 2004,
       "title": "AHEAD",
       "longtitle": "Feature-oriented programming (FOP) and the AHEAD tool suite",
       "description": "This work focuses on feature-oriented programming and the AHEAD tool suite.",
@@ -94,46 +84,90 @@
       "hierarchy": ["Variability Implementation", "Feature-oriented programming (FOP)"]
     },
     {
-      "id": "Logic_01",
-      "year": 2001,
-      "title": "Dummy milestone",
-      "hierarchy": ["Automated Analysis", "SAT Solvers"],
-      "bib_key": "Batory2001Generative"
+      "id": "Czarnecki2005_CardinalityFMs",
+      "title": "Cardinality-based FMs",
+      "longtitle": "Cardinality-based Feature Models",
+      "description": "This work focuses on formalizing cardinality-based feature models and their specialization.",
+      "concepts": ["Cardinality-based feature model"],
+      "hierarchy": ["Fundamentals", "FODA extensions"]
     },
     {
-      "id": "CFM_05",
-      "year": 2005,
-      "title": "Dummy milestone",
-      "hierarchy": ["Fundamentals", "Expresivity"],
-      "bib_key": "Czarnecki2005CFM"
+      "id": "Czarnecki2005_StagedConfiguration",
+      "title": "Staged Configuration",
+      "longtitle": "Staged Configuration of Feature Models",
+      "description": "This work focuses on the staged configuration of feature models.",
+      "concepts": ["Staged configuration", "Multi-level configuration"],
+      "hierarchy": ["Configuration"]
     },
     {
-      "id": "AFM_05",
-      "year": 2005,
-      "title": "Attributed FMs (AFMs)",
-      "hierarchy": ["Fundamentals", "Expresivity"],
-      "bib_key": "Thiel2005AFM"
+      "id": "Tseng2001_MassCustomization",
+      "title": "Mass Customization",
+      "longtitle": "Mass Customization",
+      "description": "This work focuses on mass customization.",
+      "concepts": ["Mass customization"],
+      "hierarchy": ["Software Product Lines"]
     },
     {
-      "id": "Dead_07",
-      "year": 2007,
-      "title": "Dummy",
-      "hierarchy": ["Evolution and Maintenance"],
-      "bib_key": "Benavides2007Dead"
+      "id": "Clements2001_SPLPracticesAndPatterns",
+      "title": "SPLs",
+      "longtitle": "Software Product Lines: Practices and Patterns",
+      "description": "This work focuses on the practices and patterns in software product lines.",
+      "concepts": ["Software product line"],
+      "hierarchy": ["Software Product Lines"]
     },
     {
-      "id": "Config_09",
-      "year": 2009,
-      "title": "Dummy",
-      "hierarchy": ["Configuration"],
-      "bib_key": "Mendoca2009Config"
+      "id": "Pohl2005_SPLEngineering",
+      "title": "SPL Engineering",
+      "longtitle": "Software Product Line Engineering - Foundations, Principles, and Techniques",
+      "description": "This work focuses on the foundations, principles, and techniques of software product line engineering.",
+      "concepts": ["Software product line engineering"],
+      "hierarchy": ["Software Product Lines"]
     },
     {
-      "id": "Mining_14",
-      "year": 2014,
-      "title": "Feature Mining (Extracción automática)",
-      "hierarchy": ["Variability modeling"],
-      "bib_key": "López14Mining"
+      "id": "Greenfield2004_SoftwareFactories",
+      "title": "PLUSS",
+      "longtitle": "The PLUSS approach",
+      "description": "This work focuses on the PLUSS approach to software factories.",
+      "concepts": ["PLUSS", "Software factories"],
+      "hierarchy": ["Software Product Lines"]
+    },
+    {
+      "id": "Eriksson2005_PLUSS",
+      "title": "Software Factories",
+      "longtitle": "Software Factories: Assembling Applications with Patterns, Models, Frameworks, and Tools",
+      "description": "This work focuses on the assembly of applications using patterns, models, frameworks, and tools.",
+      "concepts": ["Software factories"],
+      "hierarchy": ["Software Product Lines"]
+    },
+    {
+      "id": "Benavides2010_AAFM20yearsSLR",
+      "title": "AAFM",
+      "longtitle": "Automated analysis of feature models 20 years later",
+      "description": "This is the first comprehensive literature review on the automated analysis of Feature Models (AAFM), covering research from the 20 years following their invention in 1990. Its historical importance lies in its role as a key reference point and conceptual foundation for the AAFM field. The authors synthesized previously disparate streams of work, defined a conceptual framework for the analysis process, and systematically classified 30 operations of analysis (e.g., void models, dead features, optimization) and four groups of automated techniques (i.e., Propositional Logic, Constraint Programming, Description Logic, and Other Analysis Techniques) used in the SPL community. The work also established several open challenges for future research, guiding the community for the next decade.",
+      "concepts": ["Automated Analysis of Feature Models (AAFM)"],
+      "hierarchy": ["Automated Analysis"]
+    },
+    {
+      "id": "Batory2005_FMsGrammarsAndPropositionalFormulas",
+      "title": "FMs, Grammars, and Propositional Formulas",
+      "longtitle": "FMs, Grammars, and Propositional Formulas",
+      "description": "Don Batory established a fundamental technical foundation for FMs by formally proving the connection between FMs, grammars, and propositional formulas. This formal equivalence was historically important because it provided a way to leverage mature, efficient tools from the logic and Artificial Intelligence communities to solve FM problems. Specifically, Batory proposed and demonstrated the use of Logic Truth Maintenance Systems (LTMSs) for real-time constraint propagation during product configuration and employed Satisfiability (SAT) solvers for debugging and verifying feature models. This approach established the boolean constraint satisfaction problem as the dominant technical paradigm for automated FM analysis",
+      "hierarchy": ["Automated Analysis", "Propositional logic based analyses"]
+    },
+    {
+      "id": "Deursen2002_FDL",
+      "title": "FDL",
+      "longtitle": "Feature Description Language (FDL)",
+      "description": "This is a foundational work that transitioned FMs from a largely informal graphical tool to a formally verifiable and manipulable artifact. Its primary contribution was the proposal of the Feature Description Language (FDL), a textual Domain-Specific Language (DSL) designed to formally capture the variability expressed in Feature Diagrams. The historical significance lies in the introduction of the Feature Diagram Algebra, a suite of formal algebraic rules that enabled automated manipulation and analysis of FMs for the first time. This work established a concrete, tool-supportable approach to FM analysis by defining rules for normalization, variability calculation, and constraint checking.",
+      "concepts": ["Feature Description Language (FDL)", "Feature Diagram Algebra"],
+      "hierarchy": ["Automated Analysis"]
+    },
+    {
+      "id": "Mannion2002_FirstOrderLogic",
+      "title": "First-Order Logic",
+      "longtitle": "First-Order Logic for FM validation",
+      "description": "This is a foundational work that introduced one of the earliest formal, automated methods for validating the consistency of SPL models. Its historical significance lies in establishing the technical paradigm of converting the complex dependency and variability relationships (like mutual exclusion or alternatives) into a single Propositional Logic expression. This technique allowed the automated verification of model properties, such as checking for void models (i.e., whether at least one valid system can be selected), and the validation of specific product configurations by using propositional calculus. Furthermore, the work formally posed key questions that later became the standard automated analysis operations in the FM community (e.g., product counting, product listing).",
+      "hierarchy": ["Automated Analysis", "Propositional logic based analyses"]
     }
   ],
   "links": [
@@ -143,8 +177,19 @@
     { "source": "Biggerstaff1989_ROSE", "target": "Kang1990_FODA" },
     { "source": "MooreAndBailin1989_KAPTUR", "target": "Kang1990_FODA" },
     { "source": "Kang1990_FODA", "target": "Kang1998_FORM" },
-    { "source": "Kang1990_FODA", "target": "Griss1998_RSEB" },
-    { "source": "Kang1990_FODA", "target": "Czarnecki2000_GenerativeProgramming" }
+    { "source": "Kang1990_FODA", "target": "Griss1998_FeatuRSEB" },
+    { "source": "Kang1990_FODA", "target": "Czarnecki2000_GenerativeProgramming" },
+    { "source": "Clements2001_SPLPracticesAndPatterns", "target": "Greenfield2004_SoftwareFactories" },
+    { "source": "Greenfield2004_SoftwareFactories", "target": "Pohl2005_SPLEngineering" },
+    { "source": "Tseng2001_MassCustomization", "target": "Greenfield2004_SoftwareFactories" },
+    { "source": "Clements2001_SPLPracticesAndPatterns", "target": "Greenfield2004_SoftwareFactories" },
+    { "source": "Griss1998_FeatuRSEB", "target": "Eriksson2005_PLUSS" },
+    { "source": "Batory2005_FMsGrammarsAndPropositionalFormulas", "target": "Benavides2010_AAFM20yearsSLR" },
+    { "source": "Benavides2005_AutomatedReasoning", "target": "Benavides2010_AAFM20yearsSLR" },
+    { "source": "Mannion2002_FirstOrderLogic", "target": "Batory2005_FMsGrammarsAndPropositionalFormulas" },
+    { "source": "Deursen2002_FDL", "target": "Benavides2005_AutomatedReasoning" },
+    { "source": "Mannion2002_FirstOrderLogic", "target": "Benavides2005_AutomatedReasoning" }
+
 
 
   ]
