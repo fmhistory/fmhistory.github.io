@@ -43,18 +43,19 @@ const CONFIG = {
 
 // --- FUNCIONES DE ASISTENCIA (Helpers) ---
 
-const getBibDetails = (bibKey) => {
-    const details = {
-        "Kang1990FODA": { "authors": "Kang et al.", "source": "SEI Tech Report" },
-        "Batory2001Generative": { "authors": "Batory et al.", "source": "Generative Prog. Book" },
-        "Czarnecki2005CFM": { "authors": "Czarnecki & Antkiewicz", "source": "ICSE '05" },
-        "Thiel2005AFM": { "authors": "Thiel & Hein", "source": "SPLC '05" },
-        "Engels2005Testing": { "authors": "Engels et al.", "source": "SPLiT '05" },
-        "Benavides2007Dead": { "authors": "Benavides et al.", "source": "EMSE Journal" },
-        "Mendoca2009Config": { "authors": "Mendonça et al.", "source": "ICSE '09" }
+const processBibEntry = (entry) => {
+    const tags = entry.entryTags;
+    return {
+        // Mapeo de campos relevantes.
+        // Se usa 'author' o 'Authors' para asegurar compatibilidad.
+        authors: tags.author || tags.Authors || "N/A", 
+        // Se usa 'booktitle' o 'journal' para identificar la fuente (Conferencia/Revista).
+        source: tags.booktitle || tags.journal || tags.Source || "N/A", 
+        // El entryType será fundamental para el color (ARTICLE, INPROCEEDINGS, etc.)
+        type: entry.entryType, 
     };
-    return details[bibKey] || { "authors": "Desconocido", "source": "Desconocida" };
 };
+
 
 /**
  * Genera la ruta recta para un enlace. El offset se ignora porque es 0.
@@ -72,7 +73,7 @@ function linkPath(source, target, offset) {
 
 class TimelineChart {
     
-    constructor(selector, dataUrl) {
+    constructor(selector, dataUrl, bibUrl) {
         this.svgElement = d3.select(selector);
         
         // Ancho visible y altura
@@ -91,6 +92,7 @@ class TimelineChart {
         }
         
         this.dataUrl = dataUrl;
+        this.bibUrl = bibUrl;
         
         this.nodesById = new Map();
         this.scales = {};
@@ -99,34 +101,103 @@ class TimelineChart {
         this.categoryYCoords = [];
     }
 
+    /**
+     * Carga el JSON del timeline y el contenido del .bib. 
+     * El parseo del .bib se realiza en un Web Worker para evitar el bloqueo.
+     */
     async loadAndProcessData() {
-        this.data = await d3.json(this.dataUrl);
+        
+        // Generar una marca de tiempo única para evitar la caché
+        const cacheBuster = `?v=${new Date().getTime()}`;
+
+        // 1. Cargar el JSON del timeline y el texto del .bib de forma asíncrona
+        const [timelineData, bibtexContent] = await Promise.all([
+            d3.json(this.dataUrl), 
+            d3.text(this.bibUrl + cacheBuster) 
+        ]);
+
+        this.data = timelineData;
         
         if (!this.data || !this.data.nodes || !this.data.links) {
-            console.error("Error: Datos incompletos.");
-            this.svg.append("text").attr("x", this.width / 2).attr("y", this.height / 2).text("ERROR al cargar los datos.");
+            console.error("Error: Datos del timeline incompletos.");
             return false;
         }
 
+        // 2. Ejecutar el parseo de BibTeX en el Web Worker
+        const publicationsJSON = await this.parseBibtexInWorker(bibtexContent);
+
+        // 3. Mapear y Enriquecer los datos (rápido)
+        const bibMap = new Map();
+        publicationsJSON.forEach(entry => {
+            const key = entry.citationKey; 
+            if (key) {
+                bibMap.set(key, processBibEntry(entry));
+            }
+        });
+
         this.data.nodes.forEach(node => {
-            const details = getBibDetails(node.bib_key);
-            node.authors = details.authors;
-            node.source = details.source;
+            const details = bibMap.get(node.id);
+            if (details) {
+                node.authors = details.authors;
+                node.source = details.source;
+                node.pub_type = details.type;
+            } else {
+                console.warn(`Clave BibTeX no encontrada: ${node.id}`);
+                node.authors = node.source = node.pub_type = "Desconocido";
+            }
             node.hierarchy = node.hierarchy && node.hierarchy.length > 0 ? node.hierarchy : ["Sin Categoría"];
             node.full_path = node.hierarchy.join(CONFIG.TEMP_PATH_DELIMITER);
         });
 
+        // ... (Inicialización final de this.nodesById, scales, etc.)
         this.nodesById = new Map(this.data.nodes.map(d => [d.id, d]));
-        
         this.categories.primary = Array.from(new Set(this.data.nodes.map(d => d.hierarchy[0]))).sort();
         this.categoryMap = new Map();
         this.categories.primary.forEach((cat, index) => this.categoryMap.set(cat, index + 1));
-        
         this.data.nodes.forEach(node => {
             node.y_pos = this.categoryMap.get(node.hierarchy[0]);
         });
         
         return true;
+    }
+
+    /**
+     * Crea un Web Worker para parsear el contenido BibTeX y espera su resultado.
+     * @param {string} bibtexContent - El contenido de texto del archivo .bib.
+     * @returns {Promise<Array<Object>>} Una promesa que se resuelve con el JSON de publicaciones.
+     */
+    parseBibtexInWorker(bibtexContent) {
+        return new Promise((resolve, reject) => {
+            try {
+                // Instancia el worker con la ruta correcta. ¡Ajusta la ruta si es necesario!
+                const bibtexWorker = new Worker('static/js/bibtex.worker.js');  
+
+                bibtexWorker.onmessage = (e) => {
+                    bibtexWorker.terminate(); // ¡Siempre termina el worker al finalizar!
+                    if (e.data.status === 'success') {
+                        resolve(e.data.data);
+                    } else {
+                        // Rechazar la promesa si el worker reporta un error de parseo
+                        console.error('Error de parseo reportado por el Worker:', e.data.message);
+                        reject(new Error(`Parseo BibTeX fallido: ${e.data.message}`));
+                    }
+                };
+
+                bibtexWorker.onerror = (e) => {
+                    bibtexWorker.terminate();
+                    // Rechazar si hay un error de carga del worker
+                    console.error('Error al cargar/ejecutar el Web Worker:', e);
+                    reject(new Error("Error del Web Worker: No se pudo iniciar el parseo."));
+                };
+                
+                // Envía el contenido del archivo al worker para que empiece el parseo
+                bibtexWorker.postMessage(bibtexContent); 
+
+            } catch (error) {
+                // Captura errores si el navegador no soporta workers
+                reject(new Error(`No se pudo iniciar el Web Worker: ${error.message}`));
+            }
+        });
     }
 
     calculateScales() {
@@ -416,9 +487,15 @@ class TimelineChart {
 
 // --- FUNCIÓN DE INICIALIZACIÓN (Punto de entrada) ---
 function initTimeline() {
-    const chart = new TimelineChart("#timeline-svg", "static/data/timeline_data.json");
+    const chart = new TimelineChart(
+        "#timeline-svg", 
+        "static/data/timeline_data.json", // 1. Ruta del JSON principal
+        "static/data/publications.bib"   // 2. Ruta del archivo BibTeX
+    );
     chart.render();
 }
 
 // Iniciar la carga de datos
-initTimeline();
+document.addEventListener('DOMContentLoaded', () => {
+    initTimeline();
+});
