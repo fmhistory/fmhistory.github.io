@@ -16,15 +16,17 @@
     <div class="modal fade" id="publicationModal" tabindex="-1" aria-labelledby="publicationModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="publicationModalLabel">Detalles del Hito</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
+                <div class="modal-header">
+                    <div class="d-flex flex-column align-items-center w-100">
+                        <h5 class="modal-title fw-bold text-center" id="publicationModalLabel">Milestone</h5>
+                        <h6 class="text-center fw-bold text-muted" id="publicationModalYear" style="margin-top: 5px;"></h6>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
@@ -35,4 +37,5 @@
     <script defer src="static/js/utils.js"></script>
     <script defer src="static/js/timeline.js"></script>
 </body>
+    <div id="custom-tooltip" style="opacity: 0;"></div>
 </html>

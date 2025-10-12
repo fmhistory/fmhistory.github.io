@@ -60,7 +60,6 @@ const processBibEntry = (entry) => {
     const tags = entry.entryTags;
     const booktitle = normalizeAccents(tags.booktitle || '');
     const year = parseInt(tags.year);
-    const icoreRanking = booktitle ? getICORERanking(booktitle, getAcronymOrTruncate(booktitle, 50), year) : null;
     const isWorkshop = booktitle.toLowerCase().includes('workshop') || booktitle.toLowerCase().includes(' ws ');
     const entryType = entry.entryType.toLowerCase();
     const journal = normalizeAccents(tags.journal || '');
@@ -75,13 +74,7 @@ const processBibEntry = (entry) => {
         pubtitle: normalizeAccents(tags.title) || '',
         journal: journal,
         booktitle: booktitle,
-        quartile: getQuartile(tags.jcr !== undefined ? tags.jcr : '?'),
-        jcr: tags.jcr || '',
-        icore: icoreRanking?.rank || null,
         acronym: entryType === 'book' ? 'Book' : (entryType === 'phdthesis' ? 'PhD Thesis' : (publicationType === 'dataArtifacts' ? publisher : getAcronymOrTruncate(journal || booktitle || '', 25))),
-        track: capitalizeFirstLetter(tags.track) || '',
-        awards: tags.awards ? tags.awards.split(',').map(a => a.trim()) : [],
-        notes: tags.note || '',
         doi: formatDoiUrl(tags.doi || tags.url || ''),
         year: year,
         month: tags.month?.charAt(0).toUpperCase() + tags.month?.slice(1) || null,
@@ -91,7 +84,6 @@ const processBibEntry = (entry) => {
         keywords: tags.keywords ? tags.keywords.split(',').map(k => k.trim()).join(', ') : '',
         address: tags.address || '',
         volume: tags.volume || '',
-        calification: tags.calification || '',
         pages: tags.pages || '',
         bibtexContent: generateBibtex(entry),
     };
@@ -187,9 +179,9 @@ class TimelineChart {
                 
             } else {
                 console.warn(`Clave BibTeX no encontrada: ${node.id}`);
-                node.authors = node.source = node.pub_type = "Desconocido";
+                //node.authors = node.source = node.pub_type = "Desconocido";
                 // Si tienes otros campos esenciales que podrían faltar, inicialízalos aquí
-                node.doi = ""; 
+                //node.doi = ""; 
             }
             node.hierarchy = node.hierarchy && node.hierarchy.length > 0 ? node.hierarchy : ["Sin Categoría"];
             node.full_path = node.hierarchy.join(CONFIG.TEMP_PATH_DELIMITER);
@@ -439,6 +431,36 @@ class TimelineChart {
         this.nodeGroup.append("circle")
             .attr("r", CONFIG.NODE_RADIUS)
             .attr("fill", d => scales.color(d.hierarchy[0]))
+            // 1. EVENTO MOUSEOVER: Muestra y rellena el tooltip
+            .on("mouseover", (event, d) => {
+                // Genera el contenido HTML
+                const tooltipContent = `
+                    <div style="font-size: 14px;">
+                        <strong>${d.longtitle || ''}</strong> (${d.year || ''})
+                    </div>
+                    ${d.description ? `<span class="historical-text">${d.description}</span>` : ''}
+                `;
+                
+                // Muestra el tooltip con el contenido
+                d3.select("#custom-tooltip")
+                    .style("opacity", 1)
+                    .html(tooltipContent);
+            })
+            
+            // 2. EVENTO MOUSEMOVE: Posiciona el tooltip
+            .on("mousemove", (event) => {
+                // event.pageX y event.pageY dan la posición del cursor en la ventana
+                d3.select("#custom-tooltip")
+                    // Ajustamos el offset (+10px) para que no oculte el cursor
+                    .style("left", (event.pageX + 15) + "px") 
+                    .style("top", (event.pageY - 15) + "px"); 
+            })
+            
+            // 3. EVENTO MOUSEOUT: Oculta el tooltip
+            .on("mouseout", () => {
+                d3.select("#custom-tooltip")
+                    .style("opacity", 0);
+            })
             // AÑADIR EL EVENTO CLICK AQUÍ
             .on("click", (event, d) => {
                 // Previene que el evento se propague si fuera necesario
@@ -447,9 +469,6 @@ class TimelineChart {
                 // Llamar al nuevo método del modal
                 this.showPublicationModal(d);
             });
-            
-        this.nodeGroup.append("title")
-            .text(d => `${d.title} (${d.year})\nDescripción: ${d.description} \nAutores: ${d.authors} \nFuente: ${d.source} \nRama: ${d.hierarchy.join(' ➔ ')}`);
     }
 
     applyLabeling() {
@@ -526,38 +545,48 @@ class TimelineChart {
     showPublicationModal(d) {
          // 1. Obtener la referencia del modal
         const myModal = new bootstrap.Modal(document.getElementById('publicationModal'));
+        // Título princiapl
+        document.getElementById('publicationModalLabel').textContent = d.longtitle || d.title || 'Milestone';
+         // 2. Título secundario (Año entre paréntesis)
+        const yearText = d.year ? `(${d.year})` : '';
+        document.getElementById('publicationModalYear').textContent = yearText;
 
         // 2. Preparar el contenido
         const modalBody = d3.select("#publicationModal .modal-body");
+        const categoryPath = d.hierarchy.join(' ➔ ');
+        const concepts = d.concepts ? d.concepts.join(', ') : '';
         const urlValue = d.doi || d.url;
         const linkText = urlValue || '-';
         const textReference = `${d.authors}. ${d.title}.${d.journal || d.booktitle ? ` ${d.journal || d.booktitle},` : ''} ${d.year}. ${d.volume ? `${d.volume}:` : ''}${d.pages ? ` ${d.pages.replace(/--/, '-')}.` : ''}${d.address ? ` ${d.address}.` : ''} ${d.doi ? `${d.doi}` : d.url ? `${d.url}` : ''}${d.awards && d.awards.length > 0 ? ` ${d.awards.map(i => ` «${i}»`).join(', ')}` : ''}`;
         // 3. Rellenar el contenido HTML
         modalBody.html(`
-            <p><strong>Type:</strong> ${typesMap[d.type]}</p>
-                <p><strong>Authors (${d.authorPosition}):</strong> ${d.authors}</p>
-                <p><strong>Title:</strong> ${d.title}</p>
+            <div class="mb-3">
+                <h6 class="text-secondary">${categoryPath || ''}</h6>
+                ${d.description ? `<p><span class="historical-text">${d.description}</span></p>` : ''}
+                ${d.concepts ? `<p><strong>Main concepts:</strong> ${concepts}</p>` : ''}
+            </div>
+
+            <hr style="border-top: 2px solid; opacity: 1;"> 
+
+            <div class="mt-3">
+                <h6 class="text-secondary">Publication details:</h6>
+                <!-- <p><strong>Type:</strong> ${typesMap[d.type]}</p> -->
+                ${d.authors ? `<p><strong>Authors:</strong> ${d.authors}</p>` : ''}
+                ${d.pubtitle ? `<p><strong>Title:</strong> ${d.pubtitle}</p>` : ''}
                 ${d.journal ? `<p><strong>Journal:</strong> ${d.journal}</p>` : ''} 
                 ${d.booktitle ? `<p><strong>Conference:</strong> ${d.booktitle}</p>` : ''}
                 ${d.volume ? `<p><strong>Volume:</strong> ${d.volume}</p>` : ''}
-                <p><strong>Year:</strong> ${d.month ? d.month : ''} ${d.year}</p>
+                ${d.year ? `<p><strong>Date:</strong> ${d.month ? d.month : ''} ${d.year}</p>` : ''}
                 ${d.address ? `<p><strong>Address:</strong> ${d.address}</p>` : ''}
-                ${d.jcr ? `<p><strong>JCR:</strong> ${d.jcr}</p>` : ''}
-                ${d.icore ? `<p><strong>ICORE:</strong> ${d.icore === '-' ? 'No indexed' : d.icore}</p>` : ''}
-                ${d.calification ? `<p><strong>Calification:</strong> ${d.calification}</p>` : ''}
                 ${d.publisher ? `<p><strong>Publisher:</strong> ${d.publisher}<p>` : ''}
-                ${d.awards && d.awards.length > 0 ? `<p><strong>Awards:</strong> ${d.awards.map(i => `${d.type === 'book' ? '🏅' : '🏆'} ${i}`).join(', ')}</p>` : ''}
-                ${d.notes ? `<p><strong>Notes:</strong> ${d.notes.split(',').map(i => `${iconMeaningMap[i.trim().toLowerCase()]} ${iconMap[i.trim().toLowerCase()]}` || '').join(", ")}</p>` : ''}
-                <p><strong>DOI/Handle/URL:</strong> <a href="${urlValue}" target="_blank" rel="noopener noreferrer">${linkText}</a></p>
-                ${d.abstract ? `<p><strong>Abstract:</strong> ${d.abstract}</p>` : ''}
-                ${d.keywords ? `<p><strong>Keywords:</strong> ${d.keywords}</p>` : ''}
+                ${urlValue ? `<p><strong>DOI/Handle/URL:</strong> <a href="${urlValue}" target="_blank" rel="noopener noreferrer">${linkText}</a></p>` : ''}
                 <hr style="border-top: 1px solid #ccc;">
-                <p><strong>Reference:</strong>
-                ${textReference}
+                ${d.reference ? `<p><strong>Reference:</strong> ${d.reference}</p>` : ''}
                 <div class="d-flex justify-content-center mt-3">
                     <button type="button" class="btn btn-outline-dark me-2" id="copyTextBtn">🏷️ Copy Reference</button>
                     <button type="button" class="btn btn-outline-dark" id="copyBibBtn">🗎 Copy BibTeX</button>
                 </div>
+            </div>
         `);
 
         // 4. Adjuntar Event Listeners a los botones (¡Deben estar dentro de la función!)

@@ -8,7 +8,6 @@ self.importScripts('../vendor/bibtexParse.js');
 // Escuchamos el contenido del .bib enviado por el hilo principal
 self.addEventListener('message', (e) => {
     const bibtexContent = e.data;
-    console.log("Worker received BibTeX content:", bibtexContent);
     try {
         // Ejecución síncrona, pero aislada del hilo principal
         const publicationsJSON = bibtexParse.toJSON(bibtexContent);

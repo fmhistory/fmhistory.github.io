@@ -4,55 +4,62 @@
       "id": "Neighbors1984_Draco",
       "year": 1984,
       "title": "Draco",
-      "description": "The Draco approach",
-      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "longtitle": "The Draco approach",
+      "description": "The Draco approach to constructing software from reusable components.",
+      "hierarchy": ["Fundamentals", "Feature model's origins"],
       "bib_key": "Neighbors1984_Draco"
     },
     {
       "id": "Lubars1988_ROSE",
       "year": 1988,
       "title": "ROSE",
-      "description": "The ROSE reuse system (Feature-based selection of components)",
-      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "longtitle": "The ROSE reuse system",
+      "description": "Wide-spectrum support for software reusability.The ROSE tool supported 'feature-based selection' of components. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
+      "hierarchy": ["Fundamentals", "Feature model's origins"],
       "bib_key": "Lubars1988_ROSE"
     },
     {
       "id": "Biggerstaff1989_ROSE",
       "year": 1989,
       "title": "ROSE",
-      "description": "The ROSE reuse system (Feature-based selection of components)",
-      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "longtitle": "The ROSE reuse system",
+      "description": "Design recovery for maintenance and reuse. The ROSE tool supported 'feature-based selection' of components. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
+      "hierarchy": ["Fundamentals", "Feature model's origins"],
       "bib_key": "Biggerstaff1989_ROSE"
     },
         {
       "id": "Batory1988_GENESIS",
       "year": 1988,
       "title": "GENESIS",
-      "description": "The GENESIS tool",
-      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "longtitle": "The GENESIS tool",
+      "description": "GENESIS: an extensible database management system.",
+      "hierarchy": ["Fundamentals", "Feature model's origins"],
       "bib_key": "Batory1988_GENESIS"
     },
     {
-      "id": "MooreAndBailin1989_KAPTUR",
+      "id": "Moore1989_KAPTUR",
       "year": 1989,
       "title": "KAPTUR",
-      "description": "The KAPTUR system.",
-      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
-      "bib_key": "MooreAndBailin1989_KAPTUR"
+      "longtitle": "The KAPTUR system",
+      "description": "The KAPTUR Environment: An Operations Concept. The KAPTUR system used 'distinctive features' to distinguish systems within a domain. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
+      "hierarchy": ["Fundamentals", "Feature model's origins"],
+      "bib_key": "Moore1989_KAPTUR"
     },
     {
       "id": "Kang1990_FODA",
       "year": 1990,
       "title": "FODA",
-      "description": "Feature-Oriented Domain Analysis (FODA), Feature diagram",
-      "hierarchy": ["I. Fundamentos", "Feature model's origins"],
+      "longtitle": "Feature-Oriented Domain Analysis (FODA)",
+      "description": "Feature modeling was originally proposed as part of the Feature-Oriented Domain Analysis (FODA) method. Historically, FODA builds on, among others, Neighbors's work on Draco, and Batory's domain analysis of DBMS and the Genesis tool.",
+      "concepts": ["Feature model", "Feature diagram"],
+      "hierarchy": ["Fundamentals", "Feature model's origins"],
       "bib_key": "Kang1990_FODA"
     },
     {
       "id": "Logic_01",
       "year": 2001,
       "title": "Formalización Lógica (SAT)",
-      "hierarchy": ["I. Fundamentos", "Análisis Formal", "SAT Solvers"],
+      "hierarchy": ["Fundamentals", "Análisis Formal", "SAT Solvers"],
       "bib_key": "Batory2001Generative"
     },
     {
@@ -80,14 +87,14 @@
       "id": "Dead_07",
       "year": 2007,
       "title": "Análisis de Propiedades (Dead Features)",
-      "hierarchy": ["I. Fundamentos", "Análisis Formal", "SAT Solvers"],
+      "hierarchy": ["Fundamentals", "Análisis Formal", "SAT Solvers"],
       "bib_key": "Benavides2007Dead"
     },
     {
       "id": "Config_09",
       "year": 2009,
       "title": "Configuración Basada en CSP",
-      "hierarchy": ["I. Fundamentos", "Análisis Formal", "CSP Solvers"],
+      "hierarchy": ["Fundamentals", "Análisis Formal", "CSP Solvers"],
       "bib_key": "Mendoca2009Config"
     },
     {

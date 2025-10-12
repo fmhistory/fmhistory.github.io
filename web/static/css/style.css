@@ -52,3 +52,41 @@ h1 {
     font-weight: bold;
     fill: #34495e;
 }
+
+.historical-text {
+    /* Usa una fuente Serif que se sienta más tradicional */
+    font-family: "Times New Roman", Times, serif;
+
+    /* Opcional: Un tamaño ligeramente mayor para destacarla */
+    font-size: 1.05em;
+    
+    /* Opcional: Un color gris oscuro si quieres que se vea como una nota */
+    color: #444; 
+}
+
+/* Estilo del Contenedor del Tooltip */
+#custom-tooltip {
+    position: absolute;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.95); /* Blanco semi-transparente */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    pointer-events: none; /* Crucial: Permite hacer clic a través del tooltip */
+    font-size: 14px;
+    line-height: 1.4;
+    max-width: 300px; /* Limita el ancho para que no sea muy largo */
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    transition: opacity 0.1s; /* Transición suave */
+    z-index: 1000; /* Asegura que esté por encima de todo */
+}
+
+/* Estilo para el texto narrativo (histórico) - APLICADO SOLO AL TOOLTIP */
+#custom-tooltip .historical-text {
+    /* Fuente Serif para darle un toque más clásico */
+    font-family: "Times New Roman", Times, serif;
+    color: #444; 
+    display: block; 
+    margin-top: 5px;
+    border-top: 1px solid #eee; 
+    padding-top: 5px;
+}
