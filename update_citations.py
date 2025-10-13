@@ -126,7 +126,7 @@ def update_citations():
     print(f"\nGuardando {updated_count} citas actualizadas en {JSON_FILE}...")
     try:
         with open(JSON_FILE, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4)
+            json.dump(data, f, indent=4, ensure_ascii=False)
         print("✅ Actualización completa.")
     except Exception as e:
         print(f"❌ Error al guardar el archivo JSON: {e}")

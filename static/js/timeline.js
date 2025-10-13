@@ -578,6 +578,7 @@ class TimelineChart {
                 ${d.description ? `<p><span class="historical-text">${d.description}</span></p>` : ''}
                 ${categoryPath ? `<p><strong>Category:</strong> ${categoryPath}</p>` : ''}
                 ${d.concepts ? `<p><strong>Main concepts:</strong> ${concepts}</p>` : ''}
+                ${d.awards && d.awards.length > 0 ? `<p><strong>Awards:</strong> ${d.awards.map(i => ` «${i}»`).join(', ')}</p>` : ''}
             </div>
 
             <hr style="border-top: 2px solid; opacity: 1;"> 
@@ -593,7 +594,6 @@ class TimelineChart {
                 ${d.year ? `<p><strong>Date:</strong> ${d.month ? d.month : ''} ${d.year}</p>` : ''}
                 ${d.address ? `<p><strong>Address:</strong> ${d.address}</p>` : ''}
                 ${d.publisher ? `<p><strong>Publisher:</strong> ${d.publisher}<p>` : ''}
-                ${d.awards && d.awards.length > 0 ? `<p><strong>Awards:</strong> ${d.awards.map(i => ` «${i}»`).join(', ')}</p>` : ''}
                 ${d.citations ? `<p><strong>Citations (Semantic Scholar):</strong> ${d.citations}</p>` : ''}
                 ${urlValue ? `<p><strong>DOI/Handle/URL:</strong> <a href="${urlValue}" target="_blank" rel="noopener noreferrer">${linkText}</a></p>` : ''}
                 <hr style="border-top: 1px solid #ccc;">

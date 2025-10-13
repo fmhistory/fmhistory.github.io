@@ -61,7 +61,7 @@ h1 {
     font-size: 1.05em;
     
     /* Opcional: Un color gris oscuro si quieres que se vea como una nota */
-    color: #444; 
+    color: #6c757d; /* old color: #444 */
 }
 
 /* Estilo del Contenedor del Tooltip */
@@ -84,7 +84,7 @@ h1 {
 #custom-tooltip .historical-text {
     /* Fuente Serif para darle un toque más clásico */
     font-family: "Times New Roman", Times, serif;
-    color: #444; 
+    color: #6c757d;  /* old color: #444 */
     display: block; 
     margin-top: 5px;
     border-top: 1px solid #eee; 

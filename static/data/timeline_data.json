@@ -123,9 +123,8 @@
                 "Constraint programming based analyses"
             ],
             "awards": [
-                "\ud83c\udfc6Most Influential Paper Award at SPLC 2017"
-            ],
-            "citations": 0
+                "🏆Most Influential Paper Award at SPLC 2017"
+            ]
         },
         {
             "id": "Batory2004_AHEAD",
@@ -153,8 +152,7 @@
             "hierarchy": [
                 "Fundamentals",
                 "FODA extensions"
-            ],
-            "citations": 0
+            ]
         },
         {
             "id": "Czarnecki2004_StagedConfiguration",
@@ -170,7 +168,7 @@
                 "Configuration"
             ],
             "awards": [
-                "\ud83c\udfc6Most Influential Paper Award at SPLC 2017"
+                "🏆Most Influential Paper Award at SPLC 2017"
             ],
             "citations": 541
         },
@@ -186,8 +184,7 @@
             ],
             "hierarchy": [
                 "Configuration"
-            ],
-            "citations": 0
+            ]
         },
         {
             "id": "Tseng2001_MassCustomization",
@@ -199,8 +196,7 @@
             ],
             "hierarchy": [
                 "Software Product Lines"
-            ],
-            "citations": 0
+            ]
         },
         {
             "id": "Clements2001_SPLPracticesAndPatterns",
@@ -276,7 +272,7 @@
                 "Propositional logic based analyses"
             ],
             "awards": [
-                "\ud83c\udfc6SPLC Test-of-Time Award 2017"
+                "🏆SPLC Test-of-Time Award 2017"
             ],
             "citations": 1353
         },
@@ -304,6 +300,191 @@
                 "Propositional logic based analyses"
             ],
             "citations": 262
+        },
+        {
+            "id": "Prehofer1997_FOP",
+            "title": "FOP",
+            "longtitle": "Feature-Oriented Programming (FOP)",
+            "description": "This milestone marks the introduction and formalization of Feature-Oriented Programming (FOP). This work first proposed the concept, defining features as fine-grained increments of functionality similar to (abstract) subclasses but focused on the core functionality, with feature interactions (method overwrites) being specified separately. The core idea was to enable an exponential number of product combinations from a base set of features and quadratic interaction resolutions, going beyond standard object-oriented composition mechanisms like inheritance.",
+            "concepts": [
+                "Feature-oriented programming (FOP)"
+            ],
+            "hierarchy": [
+                "Variability Implementation",
+                "Composition-based approaches",
+                "Feature-oriented programming (FOP)"
+            ],
+            "awards": [
+                "🏆Most Influential Paper Award at SPLC 2018"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Prehofer2001_FOP",
+            "title": "FOP",
+            "longtitle": "Feature-Oriented Programming (FOP)",
+            "description": "This work extended and formalized the Feature-Oriented Programming (FOP) model, specifically introducing explicit interaction handlers to adapt features and address the feature interaction problem systematically. Historically, this work is crucial as it connected feature models from the domain analysis phase (variability modeling) directly to the implementation phase (code composition), establishing one of the major paradigms, alongside Aspect-Oriented Programming (AOP), for realizing software product lines at the source code level.",
+            "concepts": [
+                "Feature-oriented programming (FOP)"
+            ],
+            "hierarchy": [
+                "Variability Implementation",
+                "Composition-based approaches",
+                "Feature-oriented programming (FOP)"
+            ],
+            "awards": [
+                "🏆Most Influential Paper Award at SPLC 2018"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Kästner2008_CIDE",
+            "title": "CIDE",
+            "longtitle": "Granularity in Software Product Lines with Colored IDE (CIDE)",
+            "description": "This work addressed the critical gap between Feature Models (specifying variability at an abstract level) and Feature Implementation (realizing variability in code). Historically, existing implementation approaches (like FOP, AOP, or C-preprocessor) primarily supported coarse-grained features (e.g., adding/wrapping entire classes or methods). This work showed that fine-grained extensions (e.g., adding a single statement or expression inside a method body) are essential, particularly when extracting features from legacy systems or for minimizing code replication. The key contribution was the introduction of Colored IDE (CIDE), a tool that allowed developers to implement both coarse and fine-grained extensions in a clean, concise, and separated manner by coloring code elements according to the feature they belong to. CIDE thus offered a fundamental implementation mechanism that directly supported the full variability complexity captured in Feature Models.",
+            "concepts": [
+                "Feature Granularity, Colored IDE (CIDE)"
+            ],
+            "hierarchy": [
+                "Variability Implementation"
+            ],
+            "awards": [
+                "🏆Most Influential Paper Award at SPLC 2019"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Smaragdakis2002_MixinLayers",
+            "title": "Mixin Layers",
+            "longtitle": "Mixin Layers",
+            "description": "This work introduced Mixin Layers as a robust, object-oriented technique for implementing large-scale refinements and collaboration-based designs. Its historical importance is that it provided one of the most powerful and flexible mechanisms for realizing the variability captured in Feature Models at the source code level, offering a practical alternative to Aspect-Oriented Programming (AOP) and earlier feature-oriented approaches. A Mixin Layer is a collection of classes that together implement a feature or refinement, and they are composable in a sequence (a stack) to build the final product. The composition mechanism, which avoids class-naming conflicts, allows for non-invasive feature addition and provides a clean separation of concerns, thereby directly supporting the principles of Software Product Line engineering.",
+            "concepts": [
+                "Mixin Layers",
+                "Refinements as Layers",
+                "Collaboration-Based Design",
+                "Non-Invasive Composition"
+            ],
+            "hierarchy": [
+                "Variability Implementation",
+                "Composition-based approaches"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Apel2008_AspectualFeatureModules",
+            "title": "Aspectual Feature Modules",
+            "longtitle": "Aspectual Feature Modules",
+            "description": "This work is a significant milestone that unified the two dominant variability realization paradigms: Feature-Oriented Programming (FOP) and Aspect-Oriented Programming (AOP). Historically, FOP (using Feature Modules) was excellent for implementing coarse-grained, compositional software blocks, while AOP (using Aspects) was essential for modularizing fine-grained, crosscutting concerns (e.g., logging, security) that scatter across multiple modules. This work systematically evaluated the strengths and weaknesses of both, concluding that they are complementary. The key contribution was the introduction of Aspectual Feature Modules (AFMs), a novel programming technique that integrates Feature Modules and Aspects into a unified construct. This provided software product line (SPL) developers with a single, comprehensive mechanism to implement both the large-scale feature logic (the FOP part) and the pervasive, non-functional requirements (the AOP part), thereby improving modularity and maintainability in SPLs.",
+            "concepts": [
+                "Aspectual Feature Modules",
+                "Complementarity of FOP and AOP",
+                "Holistic Variability Realization"
+            ],
+            "hierarchy": [
+                "Variability Implementation",
+                "Composition-based approaches"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Kiczales1997_AOP",
+            "title": "AOP",
+            "longtitle": "Aspect-Oriented Programming (AOP)",
+            "description": "This work introduced the concept of Aspect-Oriented Programming (AOP) and the first implementation in the AspectJ language. Its historical significance for Feature Models (FMs) is profound: it provided the second major technical solution (alongside Feature-Oriented Programming) for the realization of variability in Software Product Lines (SPLs) at the code level. The core concept is the crosscutting concern (an aspect), which is a design decision (like logging, synchronization, or security) whose implementation logically belongs to a single module but is physically scattered across many parts of the system's core functionality (the base code). AOP allowed developers to modularize these crosscutting features, thus directly supporting the implementation of features that require modifications to many different parts of a software product line. This capability was later integrated with FOP to create unified realization techniques.",
+            "concepts": [
+                "Aspect-Oriented Programming (AOP)",
+                "Aspects",
+                "Crosscutting Concerns",
+                "Tangled Code",
+                "Join Point Model"
+            ],
+            "hierarchy": [
+                "Variability Implementation",
+                "Composition-based approaches",
+                "Aspect-Oriented Programming (AOP)"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Classen2010_TemporalPropertiesSPLs",
+            "title": "Model Checking SPLs",
+            "longtitle": "Efficient Verification of Temporal Properties in SPLs",
+            "description": "A major historical advance in the formal verification of Software Product Lines (SPLs). Given that the number of products in an SPL can be exponential in the number of features (the \"combinatorial explosion\" problem), previous approaches to verify system behavior (e.g., model checking each product individually) were not scalable. This work's historical importance is that it introduced a scalable technique for verifying temporal properties (e.g., \"The system will eventually reach a safe state\") across the entire family of systems simultaneously. The key was to extend transition systems with features (Feature-Oriented Transition Systems) and apply a specialized lifted model checking algorithm. This allowed checking a single compact model, rather than 2N product-specific models, making the formal verification of system behavior in industrial-scale SPLs feasible for the first time.",
+            "concepts": [
+                "Feature-Oriented Transition Systems (FOTS)",
+                "Lifted Model Checking",
+                "Behavioral Verification"
+            ],
+            "hierarchy": [
+                "Automated Analysis",
+                "Formal Verification"
+            ],
+            "awards": [
+                "🏆Most Influential Paper Award at SPLC 2020"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Schaefer2010_DOP",
+            "title": "DOP",
+            "longtitle": "Delta-Oriented Programming (DOP)",
+            "description": "This work introduced Delta-Oriented Programming (DOP) as a novel, fundamental paradigm for implementing Software Product Lines (SPLs), offering an alternative to the compositional approach of Feature-Oriented Programming (FOP). Historically, FOP relied on extending existing code by stacking feature modules. DOP, by contrast, relies on a core module (a valid product) and a set of delta modules that specify additive, modificatory, and removal changes to the core code. This historical shift provides greater flexibility, as it supports modifications and removals that are cumbersome in purely compositional FOP approaches. Products are derived by applying a sequence of delta modules based on the feature configuration. DOP is particularly valuable for SPLs derived from legacy or existing single-application systems because it aligns closely with the patching/refactoring nature of such evolution.",
+            "concepts": [
+                "Delta-Oriented Programming (DOP)",
+                "Core Module",
+                "Delta Modules",
+                "Application Conditions"
+            ],
+            "hierarchy": [
+                "Variability Implementation",
+                "Composition-based approaches",
+                "Delta-Oriented Programming (DOP)"
+            ],
+            "awards": [
+                "🏆Most Influential Paper Award at SPLC 2022"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Perrouin2010_TWiseTestCaseGeneration",
+            "title": "T-wise Testing",
+            "longtitle": "T-wise Test Case Generation",
+            "description": "A foundational work in the testing and quality assurance of Software Product Lines (SPLs). Given the combinatorial explosion problem—where an SPL can have thousands or millions of valid products—exhaustive testing is infeasible. This work popularized the use of T-wise combinatorial testing as a practical and effective strategy for SPL validation. T-wise testing generates a small, representative subset of products that guarantees coverage of all possible interactions between T features. The historical importance of the paper lies in addressing the scalability and automation challenges of this method. It proposes and implements a toolset that uses the Alloy constraint solver to automatically generate T-wise test cases from Feature Models, and, critically, introduces strategies to split large T-wise combinations into solvable subsets to overcome the memory and time limitations of SAT solvers (\"all-at-once\" failure).",
+            "concepts": [
+                "T-wise Combinatorial Testing for SPLs",
+                "Alloy-Based Test Generation",
+                "Scalability Strategies",
+                "Metrics for Evaluation"
+            ],
+            "hierarchy": [
+                "Software Product Lines",
+                "Testing"
+            ],
+            "awards": [
+                "🏆Most Influential Paper Award at SPLC 2024"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Thum2009_ReasoningAboutEditsToFMs",
+            "title": "Refactoring",
+            "longtitle": "Reasoning about Edits to Feature Models",
+            "description": "This work addresses the critical and practical problem of Feature Model (FM) evolution. Since Software Product Lines (SPLs) and their models evolve continuously, designers need to understand and control how modifications to an FM affect the set of valid products (the product space). The historical importance of this work lies in providing the first formal and efficient framework for reasoning about and classifying FM edits. The authors defined a taxonomy of edits (refactorings, specializations, generalizations, and arbitrary edits) based on whether the edit preserves, reduces, or expands the product space. Most crucially, they presented an algorithm that automatically takes two FMs (before and after edit) as input and efficiently computes the classification and determines the set of added or deleted products, even for large models with thousands of features. This capability provided essential tool support for maintaining consistency and coherence during SPL evolution.",
+            "concepts": [
+                "FM Edit Taxonomy",
+                "Refactoring",
+                "Specialization",
+                "Generalization",
+                "Change Reasoning Algorithm",
+                "Automated Coherence Management"
+            ],
+            "hierarchy": [
+                "Evolution"
+            ],
+            "awards": [
+                "🏆Most Influential Paper Award at SPLC 2023"
+            ],
+            "citations": 0
         }
     ],
     "links": [
@@ -390,6 +571,30 @@
         {
             "source": "Czarnecki2000_GenerativeProgramming",
             "target": "Czarnecki2005_CardinalityFMs"
+        },
+        {
+            "source": "Prehofer1997_FOP",
+            "target": "Prehofer2001_FOP"
+        },
+        {
+            "source": "Prehofer2001_FOP",
+            "target": "Batory2004_AHEAD"
+        },
+        {
+            "source": "Batory2004_AHEAD",
+            "target": "Kästner2008_CIDE"
+        },
+        {
+            "source": "Smaragdakis2002_MixinLayers",
+            "target": "Kästner2008_CIDE"
+        },
+        {
+            "source": "Apel2008_AspectualFeatureModules",
+            "target": "Kästner2008_CIDE"
+        },
+        {
+            "source": "Kiczales1997_AOP",
+            "target": "Kästner2008_CIDE"
         }
     ]
 }
