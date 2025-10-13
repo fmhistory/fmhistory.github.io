@@ -183,6 +183,7 @@ class TimelineChart {
                 // Si tienes otros campos esenciales que podrían faltar, inicialízalos aquí
                 //node.doi = ""; 
             }
+            node.citations = node.citations || 0; // Asegura que las citas estén definidas
             node.hierarchy = node.hierarchy && node.hierarchy.length > 0 ? node.hierarchy : ["Sin Categoría"];
             node.full_path = node.hierarchy.join(CONFIG.TEMP_PATH_DELIMITER);
         });
@@ -253,6 +254,17 @@ class TimelineChart {
         this.scales.color = d3.scaleOrdinal()
             .domain(this.categories.primary)
             .range(d3.schemeCategory10);
+            
+        // 1. Obtener el dominio para las citas
+        // Aseguramos que el mínimo sea 1 si no hay citas, para que la escala funcione.
+        const minCitations = d3.min(this.data.nodes, d => d.citations || 0);
+        const maxCitations = d3.max(this.data.nodes, d => d.citations || 0);
+
+        // 2. Definir la escala de radio (usando raíz cuadrada para mejor visualización)
+        this.scales.radius = d3.scaleSqrt()
+            .domain([minCitations, maxCitations])
+            // Rango: de 4px (mínimo) a 15px (máximo)
+            .range([CONFIG.NODE_RADIUS, 15]); 
             
         this.categoryYCoords = this.categories.primary.map(cat => this.scales.y(this.categoryMap.get(cat)));
     }
@@ -430,7 +442,7 @@ class TimelineChart {
             .attr("transform", d => `translate(${d.x_coord}, ${d.y_coord_final})`);
 
         this.nodeGroup.append("circle")
-            .attr("r", CONFIG.NODE_RADIUS)
+            .attr("r", d => scales.radius(d.citations || 0)) // Radio basado en citas
             .attr("fill", d => scales.color(d.hierarchy[0]))
             // 1. EVENTO MOUSEOVER: Muestra y rellena el tooltip
             .on("mouseover", (event, d) => {
@@ -582,6 +594,7 @@ class TimelineChart {
                 ${d.address ? `<p><strong>Address:</strong> ${d.address}</p>` : ''}
                 ${d.publisher ? `<p><strong>Publisher:</strong> ${d.publisher}<p>` : ''}
                 ${d.awards && d.awards.length > 0 ? `<p><strong>Awards:</strong> ${d.awards.map(i => ` «${i}»`).join(', ')}</p>` : ''}
+                ${d.citations ? `<p><strong>Citations (Semantic Scholar):</strong> ${d.citations}</p>` : ''}
                 ${urlValue ? `<p><strong>DOI/Handle/URL:</strong> <a href="${urlValue}" target="_blank" rel="noopener noreferrer">${linkText}</a></p>` : ''}
                 <hr style="border-top: 1px solid #ccc;">
                 ${d.reference ? `<p><strong>Reference:</strong> ${d.reference}</p>` : ''}
@@ -616,6 +629,49 @@ class TimelineChart {
         myModal.show();
     }
     
+    /**
+     * Actualiza el número de citas de los nodos y redibuja la visualización.
+     * @param {Map<string, number>} newCitationsMap - Mapa de (DOI o ID -> número de citas).
+     */
+    updateAndRedrawCitations(newCitationsMap) {
+        if (!newCitationsMap || !(newCitationsMap instanceof Map)) {
+            console.error("La función requiere un Map de {id: citas}.");
+            return;
+        }
+
+        console.log("Aplicando nuevas citas y redibujando...");
+        let updatedCount = 0;
+
+        // 1. Actualizar el modelo de datos
+        this.data.nodes.forEach(node => {
+            // Se puede buscar por ID o por DOI (si la clave del mapa es el DOI)
+            const newCitations = newCitationsMap.get(node.id) || newCitationsMap.get(node.doi);
+            
+            if (newCitations !== undefined && newCitations !== null) {
+                if (node.citations !== newCitations) {
+                    node.citations = newCitations;
+                    updatedCount++;
+                }
+            }
+        });
+
+        // 2. Recalcular y Redibujar
+        if (updatedCount > 0) {
+            this.calculateScales(); // Recalcula la escala de radio con los nuevos valores min/max
+            
+            // Redibujar solo los nodos (círculos) con una transición suave
+            this.svg.select(".nodes") 
+                .selectAll("circle")
+                .data(this.data.nodes)
+                .transition().duration(800)
+                .attr("r", d => this.scales.radius(d.citations || 0));
+
+            console.log(`✅ Se actualizaron ${updatedCount} nodos. El tamaño de los círculos ha cambiado.`);
+        } else {
+            console.log("No se encontraron cambios en las citas para redibujar.");
+        }
+    }
+
     // --- FUNCIÓN DE EJECUCIÓN PÚBLICA ---
     async render() {
         const dataLoaded = await this.loadAndProcessData();
