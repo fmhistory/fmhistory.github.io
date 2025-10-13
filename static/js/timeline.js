@@ -309,6 +309,7 @@ class TimelineChart {
                 let finalY = node.y_coord + node.y_jitter;
                 
                 // Aplicar Repulsión a líneas de otras categorías (para que no crucen la línea)
+                /*
                 this.categoryYCoords.forEach(lineY => {
                     if (Math.abs(lineY - node.y_coord) > 1) { 
                         const diff = finalY - lineY;
@@ -318,7 +319,7 @@ class TimelineChart {
                         }
                     }
                 });
-                
+                */
                 node.y_coord_final = finalY;
             });
         });
@@ -561,8 +562,9 @@ class TimelineChart {
         // 3. Rellenar el contenido HTML
         modalBody.html(`
             <div class="mb-3">
-                <h6 class="text-secondary">${categoryPath || ''}</h6>
+                <!-- <h6 class="text-secondary">Category: ${categoryPath || ''}</h6> -->
                 ${d.description ? `<p><span class="historical-text">${d.description}</span></p>` : ''}
+                ${categoryPath ? `<p><strong>Category:</strong> ${categoryPath}</p>` : ''}
                 ${d.concepts ? `<p><strong>Main concepts:</strong> ${concepts}</p>` : ''}
             </div>
 
@@ -579,6 +581,7 @@ class TimelineChart {
                 ${d.year ? `<p><strong>Date:</strong> ${d.month ? d.month : ''} ${d.year}</p>` : ''}
                 ${d.address ? `<p><strong>Address:</strong> ${d.address}</p>` : ''}
                 ${d.publisher ? `<p><strong>Publisher:</strong> ${d.publisher}<p>` : ''}
+                ${d.awards && d.awards.length > 0 ? `<p><strong>Awards:</strong> ${d.awards.map(i => ` «${i}»`).join(', ')}</p>` : ''}
                 ${urlValue ? `<p><strong>DOI/Handle/URL:</strong> <a href="${urlValue}" target="_blank" rel="noopener noreferrer">${linkText}</a></p>` : ''}
                 <hr style="border-top: 1px solid #ccc;">
                 ${d.reference ? `<p><strong>Reference:</strong> ${d.reference}</p>` : ''}

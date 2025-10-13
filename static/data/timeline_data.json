@@ -73,7 +73,8 @@
       "longtitle": "Automated Reasoning on Feature Models",
       "description": "A major historical milestone as the first proposal to successfully model and reason on both functional and extra-functional features (i.e., quality or non-functional features) within a single feature model. Its key importance lies in introducing Constraint Programming (CP) and Constraint Satisfaction Optimization Problems (CSOP) as the formal foundation for automated analysis, alongside Propositional Logic. This work extended traditional FMs to include measurable attributes and attribute-based constraints. Furthermore, it generalized the capabilities of automated reasoning by defining a suite of five core operations (counting, filtering, listing products, validation, and optimization) that were more advanced than previous limited attempts. This established the paradigm for product-line optimization based on quality attributes like cost or development time.",
       "concepts": ["Attributed feature models", "Extended feature models"],
-      "hierarchy": ["Automated Analysis", "Constraint programming based analyses"]
+      "hierarchy": ["Automated Analysis", "Constraint programming based analyses"],
+      "awards": ["🏆Most Influential Paper Award at SPLC 2017"]
     },
     {
       "id": "Batory2004_AHEAD",
@@ -92,11 +93,20 @@
       "hierarchy": ["Fundamentals", "FODA extensions"]
     },
     {
-      "id": "Czarnecki2005_StagedConfiguration",
+      "id": "Czarnecki2004_StagedConfiguration",
       "title": "Staged Configuration",
       "longtitle": "Staged Configuration of Feature Models",
-      "description": "This work focuses on the staged configuration of feature models.",
-      "concepts": ["Staged configuration", "Multi-level configuration"],
+      "description": "Historically, this work and its journal extension unified and formalized many disparate extensions into the Cardinality-Based Feature Model (CBFM) notation, which integrated feature cardinalities, group cardinalities, attributes, and diagram references. More critically, the work introduced the novel concept of Staged Configuration, acknowledging that in realistic development processes, different groups and roles (e.g., system administrator vs. end-user) eliminate product variability at different times or stages of the product lifecycle. This particular contribution at SPLC 2004 proposed achieving staged configuration through stepwise specialization (transforming a feature model into a less variable feature model).",
+      "concepts": ["Staged configuration", "Stepwise specialization", "Cardinality-based feature model"],
+      "hierarchy": ["Configuration"],
+      "awards": ["🏆Most Influential Paper Award at SPLC 2017"]
+    },
+    {
+      "id": "Czarnecki2005_StagedConfiguration",
+      "title": "Multi-level configuration",
+      "longtitle": "Multi-level Configuration of Feature Models",
+      "description": "This work extended the Staged Configuration concept with Multilevel Configuration, where separate feature models define the choices for each stage. This multilevel approach was specifically proposed as a solution to avoid \"analysis paralysis\" by separating configuration choices based on abstraction levels.",
+      "concepts": ["Staged configuration", "Multi-level configuration", "Cardinality-based feature model"],
       "hierarchy": ["Configuration"]
     },
     {
@@ -152,7 +162,8 @@
       "title": "FMs, Grammars, and Propositional Formulas",
       "longtitle": "FMs, Grammars, and Propositional Formulas",
       "description": "Don Batory established a fundamental technical foundation for FMs by formally proving the connection between FMs, grammars, and propositional formulas. This formal equivalence was historically important because it provided a way to leverage mature, efficient tools from the logic and Artificial Intelligence communities to solve FM problems. Specifically, Batory proposed and demonstrated the use of Logic Truth Maintenance Systems (LTMSs) for real-time constraint propagation during product configuration and employed Satisfiability (SAT) solvers for debugging and verifying feature models. This approach established the boolean constraint satisfaction problem as the dominant technical paradigm for automated FM analysis",
-      "hierarchy": ["Automated Analysis", "Propositional logic based analyses"]
+      "hierarchy": ["Automated Analysis", "Propositional logic based analyses"],
+      "awards": ["🏆SPLC Test-of-Time Award 2017"]
     },
     {
       "id": "Deursen2002_FDL",
@@ -188,7 +199,11 @@
     { "source": "Benavides2005_AutomatedReasoning", "target": "Benavides2010_AAFM20yearsSLR" },
     { "source": "Mannion2002_FirstOrderLogic", "target": "Batory2005_FMsGrammarsAndPropositionalFormulas" },
     { "source": "Deursen2002_FDL", "target": "Benavides2005_AutomatedReasoning" },
-    { "source": "Mannion2002_FirstOrderLogic", "target": "Benavides2005_AutomatedReasoning" }
+    { "source": "Mannion2002_FirstOrderLogic", "target": "Benavides2005_AutomatedReasoning" },
+    { "source": "Czarnecki2004_StagedConfiguration", "target": "Czarnecki2005_StagedConfiguration" },
+    { "source": "Czarnecki2000_GenerativeProgramming", "target": "Czarnecki2004_StagedConfiguration" },
+    { "source": "Czarnecki2000_GenerativeProgramming", "target": "Czarnecki2005_CardinalityFMs" }
+
 
 
 
