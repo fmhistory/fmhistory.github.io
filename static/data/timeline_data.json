@@ -317,7 +317,7 @@
             "awards": [
                 "🏆Most Influential Paper Award at SPLC 2018"
             ],
-            "citations": 0
+            "citations": 524
         },
         {
             "id": "Prehofer2001_FOP",
@@ -335,7 +335,7 @@
             "awards": [
                 "🏆Most Influential Paper Award at SPLC 2018"
             ],
-            "citations": 0
+            "citations": 44
         },
         {
             "id": "Kästner2008_CIDE",
@@ -351,7 +351,7 @@
             "awards": [
                 "🏆Most Influential Paper Award at SPLC 2019"
             ],
-            "citations": 0
+            "citations": 505
         },
         {
             "id": "Smaragdakis2002_MixinLayers",
@@ -368,7 +368,7 @@
                 "Variability Implementation",
                 "Composition-based approaches"
             ],
-            "citations": 0
+            "citations": 364
         },
         {
             "id": "Apel2008_AspectualFeatureModules",
@@ -384,7 +384,7 @@
                 "Variability Implementation",
                 "Composition-based approaches"
             ],
-            "citations": 0
+            "citations": 190
         },
         {
             "id": "Kiczales1997_AOP",
@@ -422,7 +422,7 @@
             "awards": [
                 "🏆Most Influential Paper Award at SPLC 2020"
             ],
-            "citations": 0
+            "citations": 371
         },
         {
             "id": "Schaefer2010_DOP",
@@ -443,7 +443,7 @@
             "awards": [
                 "🏆Most Influential Paper Award at SPLC 2022"
             ],
-            "citations": 0
+            "citations": 408
         },
         {
             "id": "Perrouin2010_TWiseTestCaseGeneration",
@@ -463,7 +463,7 @@
             "awards": [
                 "🏆Most Influential Paper Award at SPLC 2024"
             ],
-            "citations": 0
+            "citations": 226
         },
         {
             "id": "Thum2009_ReasoningAboutEditsToFMs",
@@ -484,7 +484,7 @@
             "awards": [
                 "🏆Most Influential Paper Award at SPLC 2023"
             ],
-            "citations": 0
+            "citations": 381
         }
     ],
     "links": [
