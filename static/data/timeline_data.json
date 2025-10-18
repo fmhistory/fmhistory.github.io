@@ -485,6 +485,36 @@
                 "🏆Most Influential Paper Award at SPLC 2023"
             ],
             "citations": 381
+        },
+        {
+            "id": "Zhang2004_EquivalentFeatures",
+            "title": "Equivalent Features",
+            "longtitle": "Equivalent Features (Precursor to Atomic Sets)",
+            "description": "This milestone focuses on the Atomic Set (AS) concept, a fundamental technique for simplifying Feature Models and improving the scalability of automated analysis. Zhang et al. first introduced the concept, implicitly recognizing that in any valid product configuration, certain features are always selected together or never selected at all. These sets of features that behave identically across all valid products were termed Equivalent Features and served as the foundational idea for Atomic Sets.",
+            "concepts": [
+                "Equivalent Features"
+            ],
+            "hierarchy": [
+                "Automated Analysis",
+                "Analysis Operations"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Segura2008_AtomicSets",
+            "title": "Atomic Sets",
+            "longtitle": "Atomic Sets",
+            "description": "S. Segura formalized and popularized the term Atomic Sets, proposing them as a generic technique for FM simplification. Its key contribution was to explicitly set the basis for the usage of Atomic Sets by defining specific algorithms and providing the first empirical evidence of their effectiveness in reducing the size of the propositional logic formula, thereby dramatically improving the performance of SAT-based analysis tools. The relationship between this contribution and its predecessor is that Zhang's work established the core idea (Equivalent Features), which Segura later formalized, named, and validated as a practical, scalable analysis technique (Atomic Sets).",
+            "concepts": [
+                "Atomic Sets",
+                "FM Simplification/Variable Reduction",
+                "Scalability for Automated Analysis"
+            ],
+            "hierarchy": [
+                "Automated Analysis",
+                "Analysis Operations"
+            ],
+            "citations": 0
         }
     ],
     "links": [
@@ -595,6 +625,10 @@
         {
             "source": "Kiczales1997_AOP",
             "target": "Kästner2008_CIDE"
+        },
+        {
+            "source": "Zhang2004_EquivalentFeatures",
+            "target": "Segura2008_AtomicSets"
         }
     ]
 }
