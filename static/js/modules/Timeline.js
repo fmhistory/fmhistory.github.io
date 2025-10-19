@@ -38,6 +38,7 @@ class Timeline {
             JITTER_AMOUNT: 50, // Máxima distancia vertical para dispersar
             BOX_PADDING: 15, // Relleno alrededor de los hitos al calcular la caja
             TEMP_PATH_DELIMITER: '|', // Delimitador para jerarquía
+            VERTICAL_SPACING_FACTOR: 1.5,  // Aumenta el espacio vertical entre categorías (ajusta este valor si es necesario)
         };
 
         this._calculateVerticalPositions();
@@ -107,11 +108,11 @@ class Timeline {
     _setupScales() {
         // --- 1. CÁLCULO DINÁMICO DEL ALTO (Height) ---
 
-        const paddingY = 100; // Espacio extra
-        const categoryHeight = 50; 
+        // La altura de la categoría debe ser mayor para acomodar el jittering y las bounding boxes
+        const categoryHeight = 50 * this.CONFIG.VERTICAL_SPACING_FACTOR; // Usamos el nuevo factor
         
-        // La altura se calcula primero, basada en el número de categorías
-        this.height = (this.yDomainSize * categoryHeight) + paddingY;
+        // CORRECCIÓN para dar más espacio arriba (y el padding ya lo da abajo)
+        this.height = (this.yDomainSize * categoryHeight) + 100; // Altura base
         
         // --- 2. CÁLCULO DINÁMICO DEL ANCHO (Width) ---
         
@@ -152,7 +153,8 @@ class Timeline {
 
         // Escala Y (Posición vertical) - Utiliza el nuevo this.height
         this.yScale = d3.scalePoint() 
-            .domain(d3.range(1, this.yDomainSize + 1))
+            .domain(d3.range(1, this.yDomainSize + 1)) //Ampliamos el dominio para añadir un "carril" vacío al principio y al final
+            //.domain(d3.range(0, this.yDomainSize + 2)) //Ampliamos el dominio para añadir un "carril" vacío al principio y al final
             .range([this.height, 0])
             .padding(0.5); 
             
