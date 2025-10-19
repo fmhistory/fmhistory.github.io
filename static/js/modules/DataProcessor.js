@@ -128,7 +128,7 @@ class DataProcessor {
             }
             // Secondary order: Ensure stability if years are identical (e.g., by id or key)
             if (a.id !== undefined && b.id !== undefined) {
-                return String(a.id).localeCompare(String(b.id)); 
+                return String(a.title).localeCompare(String(b.title)); 
             }
             
             return 0; 
