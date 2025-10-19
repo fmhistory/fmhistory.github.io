@@ -12,6 +12,19 @@
             "citations": 480
         },
         {
+            "id": "Moore1989_KAPTUR",
+            "title": "KAPTUR",
+            "longtitle": "The KAPTUR system",
+            "description": "The KAPTUR Environment: An Operations Concept. The KAPTUR system used 'distinctive features' to distinguish systems within a domain. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
+            "concepts": [
+                "Distinctive features"
+            ],
+            "hierarchy": [
+                "Fundamentals",
+                "Feature model's origins"
+            ]
+        },
+        {
             "id": "Lubars1988_ROSE",
             "title": "ROSE",
             "longtitle": "The ROSE reuse system",
@@ -48,19 +61,6 @@
                 "Feature model's origins"
             ],
             "citations": 248
-        },
-        {
-            "id": "Moore1989_KAPTUR",
-            "title": "KAPTUR",
-            "longtitle": "The KAPTUR system",
-            "description": "The KAPTUR Environment: An Operations Concept. The KAPTUR system used 'distinctive features' to distinguish systems within a domain. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
-            "concepts": [
-                "Distinctive features"
-            ],
-            "hierarchy": [
-                "Fundamentals",
-                "Feature model's origins"
-            ]
         },
         {
             "id": "Kang1990_FODA",
@@ -535,7 +535,7 @@
             "target": "Kang1990_FODA"
         },
         {
-            "source": "MooreAndBailin1989_KAPTUR",
+            "source": "Moore1989_KAPTUR",
             "target": "Kang1990_FODA"
         },
         {
