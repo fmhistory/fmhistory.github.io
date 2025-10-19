@@ -463,7 +463,7 @@ class Timeline {
         nodesGroup.selectAll(".node-label")
             .data(this.nodes, d => d.id) 
             .enter()
-            .append("text")
+            .append("text") 
             .attr("class", "node-label")
             .attr("x", d => d.x_coord) 
             // Usa el radio dinámico de la escala para evitar superposición con círculos grandes
@@ -472,7 +472,7 @@ class Timeline {
             .style("font-size", "10px")
             .style("fill", "#555")
             .style("pointer-events", "none")
-            .style("text-anchor", "middle"); // Centrar el texto
+            .style("text-anchor", "start"); // Alinear el texto al inicio (center para centrar)
     }
 
     /**
