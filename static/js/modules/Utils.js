@@ -15,21 +15,85 @@ const normalizeAccents = (str) => {
         return '';
     }
     let cleaned = str.trim();
-    cleaned = cleaned.replaceAll('{', '').replaceAll('}', '');
+    //cleaned = cleaned.replace(/\\.+?\{/g, ""); 
+    cleaned = cleaned.replaceAll('{', '');
+    cleaned = cleaned.replaceAll('}', '');
+    // Un mapa de caracteres especiales a sus equivalentes normales
     const replacements = {
-        '\\\'a': 'á', '\\\'e': 'é', '\\\'i': 'í', '\\\'o': 'ó', '\\\'u': 'ú',
-        '\\\'A': 'Á', '\\\'E': 'É', '\\\'I': 'Í', '\\\'O': 'Ó', '\\\'U': 'Ú',
-        '\\`a': 'à', '\\`e': 'è', '\\`i': 'ì', '\\`o': 'ò', '\\`u': 'ù', 
-        '\\`A': 'À', '\\`E': 'È', '\\`I': 'Ì', '\\`O': 'Ò', '\\`U': 'Ù', 
-        '\\~a': 'ã', '\\~o': 'õ', '\\~n': 'ñ', '\\~A': 'Ã', '\\~O': 'Õ', '\\~N': 'Ñ',
-        '\\^a': 'â', '\\^e': 'ê', '\\^i': 'î', '\\^o': 'ô', '\\^u': 'û', 
-        '\\^A': 'Â', '\\^E': 'Ê', '\\^I': 'Î', '\\^O': 'Ô', '\\^U': 'Û',
-        '\\ss': 'ß', '\\ae': 'æ', '\\AE': 'Æ', '\\oe': 'œ', '\\OE': 'Œ', 
-        '\\l': 'ł', '\\L': 'Ł',
-        '\\á': 'á', '\\ñ': 'ñ', '\\ü': 'ü', '\\ç': 'ç', '\\Á': 'Á', '\\Ñ': 'Ñ', '\\Ü': 'Ü', '\\Ç': 'Ç'
-    };
-    const regex = new RegExp(Object.keys(replacements).join('|'), 'g');
-    cleaned = cleaned.replace(regex, (match) => replacements[match]);
+        "\\'a": 'á',
+        "\\'e": 'é',
+        "\\'i": 'í',
+        "\\'o": 'ó',
+        "\\'u": 'ú',
+        "\\'A": 'Á',
+        "\\'E": 'É',
+        "\\'I": 'Í',
+        "\\'O": 'Ó',
+        "\\'U": 'Ú',
+        '\\`a': 'à',
+        '\\`e': 'è',
+        '\\`i': 'ì',
+        '\\`o': 'ò',
+        '\\`u': 'ù',
+        '\\`A': 'À',
+        '\\`E': 'È',
+        '\\`I': 'Ì',
+        '\\`O': 'Ò',
+        '\\`U': 'Ù',
+        '\\~a': 'ã',
+        '\\~e': 'ẽ',
+        '\\~i': 'ĩ',
+        '\\~o': 'õ',
+        '\\~u': 'ũ',
+        '\\~A': 'Ã',
+        '\\~E': 'Ẽ',
+        '\\~I': 'Ĩ',
+        '\\~O': 'Õ',
+        '\\~U': 'Ũ',
+        '\\~n': 'ñ',
+        '\\~N': 'Ñ',
+        '\\^a': 'â',
+        '\\^e': 'ê',
+        '\\^i': 'î',
+        '\\^o': 'ô',
+        '\\^u': 'û',
+        '\\^A': 'Â',
+        '\\^E': 'Ê',
+        '\\^I': 'Î',
+        '\\^O': 'Ô',
+        '\\^U': 'Û',
+        '\\ss': 'ß',
+        '\\ae': 'æ',
+        '\\AE': 'Æ',
+        '\\oe': 'œ',
+        '\\OE': 'Œ',
+        '\\l': 'ł',
+        '\\L': 'Ł',
+        '\\á': 'á',
+        '\\é': 'é',
+        '\\í': 'í',
+        '\\ó': 'ó',
+        '\\ú': 'ú',
+        '\\Á': 'Á',
+        '\\É': 'É',
+        '\\Í': 'Í',
+        '\\Ó': 'Ó',
+        '\\Ú': 'Ú',
+        '\\ñ': 'ñ',
+        '\\Ñ': 'Ñ',
+        '\\ü': 'ü',
+        '\\Ü': 'Ü',
+        '\\ç': 'ç',
+        '\\Ç': 'Ç'
+        };
+
+    
+    // Iteramos sobre el mapa y reemplazamos cada ocurrencia
+    for (const specialChar in replacements) {
+        cleaned = cleaned.replaceAll(specialChar, replacements[specialChar]);
+    }
+    
+    // Normalizes multiple spaces to a single space
     cleaned = cleaned.replace(/\s+/g, ' ').trim();
     return cleaned;
 };

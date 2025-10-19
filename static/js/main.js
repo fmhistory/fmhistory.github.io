@@ -4,9 +4,12 @@
  */
 import { DataProcessor } from './modules/DataProcessor.js';
 import { Timeline } from './modules/Timeline.js';
+import { showNodeDetails } from './modules/ModalHandler.js';
+window.showNodeDetails = showNodeDetails;  // Hacer accesible globalmente para d3.js
 
 // d3.js se usa como global (window.d3) ya que se cargó con un script estándar
 const d3 = window.d3; 
+
 
 // Definiciones de la aplicación
 const DATA_PATH = 'static/data/';

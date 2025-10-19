@@ -39,6 +39,8 @@ class Timeline {
             BOX_PADDING: 15, // Relleno alrededor de los hitos al calcular la caja
             TEMP_PATH_DELIMITER: '|', // Delimitador para jerarquía
             VERTICAL_SPACING_FACTOR: 1.5,  // Aumenta el espacio vertical entre categorías (ajusta este valor si es necesario)
+            LABEL_OFFSET: 10, // Distancia horizontal de la etiqueta al círculo
+            LABEL_VERTICAL_ADJUST: 3, // Ajuste vertical fino para la etiqueta
         };
 
         this._calculateVerticalPositions();
@@ -162,6 +164,22 @@ class Timeline {
         const categories = Array.from(this.categoryMap.keys());
         this.colorScale = d3.scaleOrdinal(d3.schemeCategory10) 
             .domain(categories);
+
+        // 🛑 NUEVO: Escala para el Radio de los Nodos (basado en Citas)
+        const citationsExtent = d3.extent(this.nodes, d => d.citations || 0);
+
+        // Definimos un rango de radios: mínimo 4px, máximo 12px (ajustable)
+        const minRadius = 4;
+        const maxRadius = 12;
+
+        this.radiusScale = d3.scaleSqrt() // d3.scaleSqrt es mejor para áreas/volúmenes (tamaño de círculo)
+            .domain(citationsExtent)
+            .range([minRadius, maxRadius]);
+
+        // Manejo del caso donde no hay citas (extent es [0, 0])
+        if (citationsExtent[0] === citationsExtent[1]) {
+            this.radiusScale.domain([0, 1]).range([minRadius, minRadius]);
+        }
     }
     
     /**
@@ -335,34 +353,61 @@ class Timeline {
     }
 
     /**
-     * RENOMBRADO y MODIFICADO: Renders the visual elements (nodes and links).
+     * Renders the visual elements (nodes, links, and labels).
      */
     _drawNodesAndLinks() {
+        const nodesGroup = this.chartArea.append("g").attr("class", "nodes");
+        
         // 1. Dibujar Nodos (Círculos)
-        this.chartArea.append("g")
-            .attr("class", "nodes")
-            .selectAll(".node")
+        const nodeCircles = nodesGroup.selectAll(".node")
             .data(this.nodes, d => d.id) 
             .enter()
             .append("circle")
             .attr("class", "node")
-            .attr("r", 6)
-            // CRÍTICO: Usar las coordenadas x_coord y y_pos ya calculadas
+            .attr("r", d => this.radiusScale(d.citations || 0))
             .attr("cx", d => d.x_coord) 
             .attr("cy", d => d.y_pos)  
-            .attr("fill", d => this.colorScale(d.hierarchy[0])); 
-        
-        // 2. Dibujar Enlaces (Links)
+            .attr("fill", d => this.colorScale(d.hierarchy[0]))
+            .style("cursor", "pointer"); // Indica que son clickeables
+
+        // Eventos del Tooltip
+        nodeCircles.on("mouseover", (event, d) => this._showTooltip(event, d))
+            .on("mousemove", (event) => d3.select("#custom-tooltip")
+                                            .style("left", (event.pageX + 10) + "px")
+                                            .style("top", (event.pageY - 20) + "px"))
+            .on("mouseout", () => this._hideTooltip())
+
+        // 2. AÑADIR INTERACTIVIDAD (Click)
+        nodeCircles.on("click", (event, d) => { 
+            // Llama a la función global que acabamos de definir en main.js
+            if (typeof window.showNodeDetails === 'function') {
+                window.showNodeDetails(d);
+            } else {
+                console.error("ERROR: window.showNodeDetails(data) no está definida. Asegúrate de importarla y hacerla global en main.js.");
+            }
+        });
+
+        // 3. Dibujar Etiquetas (Títulos)
+        nodesGroup.selectAll(".node-label")
+            .data(this.nodes, d => d.id) 
+            .enter()
+            .append("text")
+            .attr("class", "node-label")
+            .attr("x", d => d.x_coord) // Desplazamiento horizontal
+            .attr("y", d => d.y_pos - this.CONFIG.NODE_RADIUS - this.CONFIG.LABEL_VERTICAL_ADJUST) // Posición vertical + ajuste
+            .text(d => d.title || `Node ${d.id}`) // Mostrar el título o un ID
+            .style("font-size", "10px")
+            .style("fill", "#555")
+            .style("pointer-events", "none"); // Esencial: evita que la etiqueta bloquee el click del círculo
+
+        // 4. Dibujar Enlaces (Links)
         const validLinks = this.links
             .map(link => {
                 const sourceNode = this.nodesById.get(link.source);
                 const targetNode = this.nodesById.get(link.target);
                 
                 if (sourceNode && targetNode) {
-                    return {
-                        source: sourceNode,
-                        target: targetNode
-                    };
+                    return { source: sourceNode, target: targetNode };
                 }
                 return null;
             })
@@ -375,13 +420,46 @@ class Timeline {
             .enter()
             .append("line")
             .attr("class", "link")
-            // CRÍTICO: Usar las coordenadas x_coord y y_pos ya calculadas
             .attr("x1", d => d.source.x_coord)
             .attr("y1", d => d.source.y_pos)
             .attr("x2", d => d.target.x_coord)
             .attr("y2", d => d.target.y_pos)
             .style("stroke", "#ccc") 
             .style("stroke-width", 1.5);
+    }
+
+    /**
+     * Muestra el tooltip personalizado con el contenido del nodo.
+     * @param {Object} event - El evento del ratón.
+     * @param {Object} d - Los datos del nodo.
+     */
+    _showTooltip(event, d) {
+        const tooltip = d3.select("#custom-tooltip");
+        
+        // Contenido del Tooltip (similar al código antiguo)
+        const categoryPath = d.hierarchy ? d.hierarchy.join(' ➔ ') : '';
+        const yearText = d.year ? `(${d.year})` : '';
+        const citationsText = d.citations ? `${d.citations} citations` : 'No citation data';
+        // <small class="text-muted">${categoryPath} ${yearText}</small>
+        tooltip.html(`
+            <div style="font-size: 14px;">
+                <strong>${d.longtitle || d.title}</strong> ${yearText}
+            </div>
+            <small class="text-muted">${categoryPath}</small>
+            <p class="mt-1 mb-0 small fw-bold">${citationsText}</p>
+        `);
+
+        // Posición: Mover el tooltip cerca del cursor
+        tooltip.style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY - 20) + "px")
+            .style("opacity", 0.95);
+    }
+
+    /**
+     * Oculta el tooltip.
+     */
+    _hideTooltip() {
+        d3.select("#custom-tooltip").style("opacity", 0);
     }
 
     /**
