@@ -515,6 +515,54 @@
                 "Analysis Operations"
             ],
             "citations": 0
+        },
+        {
+            "id": "Agh2024_SPLTestingSLR",
+            "title": "SPL Testing SLR",
+            "longtitle": "Software Product Line Testing: A Systematic Literature Review",
+            "description": "This Systematic Literature Review provides a crucial historical snapshot and comprehensive analysis of the entire field of SPL Testing. Its historical importance is that it synthesizes two decades of work (from 2003 to 2022), offering an up-to-date classification, assessment, and gap analysis for researchers and practitioners. The authors analyzed 118 studies to answer key questions, confirming the maturity of certain areas (e.g., T-wise testing and automated configuration selection) while highlighting significant deficiencies. Most notably, the review identifies a major gap in techniques for non-functional testing (e.g., performance, security) and regression testing in SPLs, guiding the next decade of research focus in quality assurance for product lines.",
+            "concepts": [
+                "Comprehensive Taxonomy of SPL Testing",
+                "Maturity Assessment",
+                "Research Gaps",
+                "Empirical Evidence Analysis"
+            ],
+            "hierarchy": [
+                "Software Product Lines",
+                "Testing"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "CarmoMachado2014_SPLTestingSLR",
+            "title": "SPL Testing SLR",
+            "longtitle": "Software Product Line Testing: A Systematic Literature Review",
+            "description": "This Systematic Literature Review is a foundational milestone in the quality assurance of SPLs. Its historical importance lies in being one of the first major reviews to specifically focus on testing strategies aimed at achieving economies of scope and scale in SPL testing. The review systematically identified and classified available research, providing a crucial synthesis for the community. It explicitly defined and contrasted key strategies such as selection-based testing (testing a subset of products, e.g., T-wise testing) and family-based testing (testing the product line assets directly), and assessed their potential for efficiency gains. This work formalized the landscape of SPL testing, setting the context for subsequent research on identifying and addressing persistent gaps.",
+            "concepts": [
+                "Testing Strategies Taxonomy",
+                "Selection-Based Testing",
+                "Family-Based Testing",
+                "Economies of Scale and Scope"
+            ],
+            "hierarchy": [
+                "Software Product Lines",
+                "Testing"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Raatikainen2019_SPLVMTertiaryStudy",
+            "title": "Tertiary Study",
+            "longtitle": "Software product lines and variability modeling: A tertiary study",
+            "description": "This Tertiary Study is a crucial historical reference for the SPL and FM community. A tertiary study analyzes and synthesizes the results of multiple systematic reviews and mapping studies. Its historical importance is that it summarized the state of research across the entire variability domain by synthesizing 86 existing reviews. The study characterized the landscape of existing systematic reviews, assessed their quality, and provided a multi-dimensional classification of variability models based on the development artifacts they cover (e.g., requirements, architecture, code). Crucially, this work confirmed the dominance of Feature Models across the lifecycle while identifying that research efforts were unevenly distributed, with a significant gap remaining in variability realization/implementation (i.e., the techniques for turning the models into actual code).",
+            "concepts": [
+                "Tertiary Study",
+                "Variability Model Classification"
+            ],
+            "hierarchy": [
+                "Variability Modeling"
+            ],
+            "citations": 0
         }
     ],
     "links": [
@@ -629,6 +677,10 @@
         {
             "source": "Zhang2004_EquivalentFeatures",
             "target": "Segura2008_AtomicSets"
+        },
+        {
+            "source": "CarmoMachado2014_SPLTestingSLR",
+            "target": "Agh2024_SPLTestingSLR"
         }
     ]
 }
