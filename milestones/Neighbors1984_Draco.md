@@ -3,7 +3,7 @@ id: "Neighbors1984_Draco"
 title: "Draco"
 longtitle: "The Draco approach"
 description: "The Draco approach to constructing software from reusable components."
-concepts: []
+concepts: ["The Draco approach"]
 hierarchy: ["Fundamentals", "Feature model's origins"]
 parents: []
 ---

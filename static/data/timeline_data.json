@@ -6,6 +6,7 @@
             "longtitle": "Feature-Oriented Domain Analysis (FODA)",
             "description": "Feature modeling was originally proposed as part of the Feature-Oriented Domain Analysis (FODA) method. Historically, FODA builds on, among others, Neighbors's work on Draco, and Batory's domain analysis of DBMS and the Genesis tool.",
             "concepts": [
+                "Feature",
                 "Feature model",
                 "Feature diagram"
             ],
@@ -26,7 +27,9 @@
             "title": "Draco",
             "longtitle": "The Draco approach",
             "description": "The Draco approach to constructing software from reusable components.",
-            "concepts": [],
+            "concepts": [
+                "The Draco approach"
+            ],
             "hierarchy": [
                 "Fundamentals",
                 "Feature model's origins"
@@ -46,7 +49,8 @@
                 "Fundamentals",
                 "Feature model's origins"
             ],
-            "parents": []
+            "parents": [],
+            "citations": 0
         },
         {
             "id": "Moore1989_KAPTUR",
@@ -60,14 +64,17 @@
                 "Fundamentals",
                 "Feature model's origins"
             ],
-            "parents": []
+            "parents": [],
+            "citations": 0
         },
         {
             "id": "Batory1988_GENESIS",
             "title": "GENESIS",
             "longtitle": "The GENESIS tool",
             "description": "GENESIS: an extensible database management system.",
-            "concepts": [],
+            "concepts": [
+                "The GENESIS tool"
+            ],
             "hierarchy": [
                 "Fundamentals",
                 "Feature model's origins"
@@ -91,6 +98,116 @@
                 "Lubars1988_ROSE"
             ],
             "citations": 405
+        },
+        {
+            "id": "Benavides2010_AAFM20yearsSLR",
+            "title": "AAFM",
+            "longtitle": "Automated analysis of feature models 20 years later",
+            "description": "This is the first comprehensive literature review on the automated analysis of Feature Models (AAFM), covering research from the 20 years following their invention in 1990. Its historical importance lies in its role as a key reference point and conceptual foundation for the AAFM field. The authors synthesized previously disparate streams of work, defined a conceptual framework for the analysis process, and systematically classified 30 operations of analysis (e.g., void models, dead features, optimization) and four groups of automated techniques (i.e., Propositional Logic, Constraint Programming, Description Logic, and Other Analysis Techniques) used in the SPL community. The work also established several open challenges for future research, guiding the community for the next decade.",
+            "concepts": [
+                "Automated Analysis of Feature Models (AAFM)"
+            ],
+            "hierarchy": [
+                "Automated Analysis"
+            ],
+            "parents": [
+                "Benavides2005_AutomatedReasoning"
+            ],
+            "citations": 1280
+        },
+        {
+            "id": "Horcas2021_MCTS",
+            "title": "MCTS for AAFM",
+            "longtitle": "Monte Carlo Tree Search for Feature Model Analyses: a General Framework for Decision-Making",
+            "description": "This work introduces the first general framework applying Monte Carlo Tree Search (MCTS) to the Automated Analysis of Feature Models (AAFM). It represents a significant shift from traditional deterministic approaches (like SAT or CSP solvers) toward simulation-based methods. By modeling feature model analysis as a sequential decision-making process, the framework allows for efficient exploration of colossal configuration spaces, providing a scalable alternative for problems such as finding defective configurations, reverse engineering, and performance optimization.",
+            "concepts": [
+                "Monte Carlo Tree Search (MCTS)"
+            ],
+            "hierarchy": [
+                "Automated Analysis",
+                "Search-based and Simulation Methods"
+            ],
+            "parents": [
+                "Benavides2010_AAFM20yearsSLR"
+            ],
+            "citations": 10
+        },
+        {
+            "id": "Horcas2023_MCTSFramework",
+            "title": "MCTS framework",
+            "longtitle": "A Monte Carlo Tree Search conceptual framework for feature model analyses",
+            "description": "This work presents the comprehensive and consolidated conceptual framework for applying Monte Carlo Tree Search (MCTS) to the Automated Analysis of Feature Models (AAFM). It formally defines how various variability analysis problems can be mapped onto Markov Decision Processes (MDPs). While previous milestones introduced the initial idea and specific simulation techniques, this publication serves as the definitive reference that unifies these methods into a single, scalable, and domain-independent framework capable of handling colossal configuration spaces where traditional exact solvers (SAT, BDD, CSP) become intractable.",
+            "concepts": [
+                "Monte Carlo Tree Search (MCTS)",
+                "Markov Decision Process (MDP)",
+                "Exploitation vs. Exploration (UCT)"
+            ],
+            "hierarchy": [
+                "Automated Analysis",
+                "Search-based and Simulation Methods"
+            ],
+            "parents": [
+                "Horcas2021_MCTS",
+                "Horcas2021_Montecarlo"
+            ],
+            "citations": 10
+        },
+        {
+            "id": "Heradio2019_StatisticalAnalysisVM",
+            "title": "Statistical Analysis",
+            "longtitle": "Supporting the Statistical Analysis of Variability Models",
+            "description": "This landmark paper establishes a formal probabilistic foundation for the automated analysis of variability models, moving the field beyond traditional binary (yes/no) logic. It introduces two exact and scalable algorithms based on Binary Decision Diagrams (BDDs): Feature Inclusion Probability (FIP), which calculates the likelihood of a feature being included in any valid product, and Product Distribution (PD), which computes the frequency of products based on their size. This work enables the characterization of software product lines through descriptive statistics (mean, variance, homogeneity) and provides a quantitative way to detect nearly-dead features and assess the impact of configuration choices in models with tens of thousands of features.",
+            "concepts": [
+                "Feature Inclusion Probability (FIP)",
+                "Product Distribution (PD)"
+            ],
+            "hierarchy": [
+                "Automated Analysis",
+                "Statistical and Probabilistic Methods"
+            ],
+            "parents": [
+                "Bryant1986_GraphBasedBDD"
+            ],
+            "citations": 23
+        },
+        {
+            "id": "Horcas2021_Montecarlo",
+            "title": "MC Simulations",
+            "longtitle": "Monte Carlo Simulations for Variability Analyses in Highly Configurable Systems",
+            "description": "This work introduces a simulation-based approach to variability analysis that applies Monte Carlo methods to estimate the influence of feature selections on configuration properties. To address the scalability limits of exhaustive exploration and traditional sampling, the approach treats configuration as a sequence of step-wise decisions centered on variation points. It leverages the law of large numbers to provide statistical estimations of how specific feature choices, such as selecting a particular database or framework, impact global properties like performance or defect probability, facilitating evidence-based recommendation systems.",
+            "concepts": [
+                "Monte Carlo simulations"
+            ],
+            "hierarchy": [
+                "Automated Analysis",
+                "Search-based and Simulation Methods"
+            ],
+            "parents": [
+                "Horcas2021_MCTS",
+                "Heradio2019_StatisticalAnalysisVM"
+            ],
+            "awards": [
+                "🏆Best Paper Award"
+            ],
+            "citations": 0
+        },
+        {
+            "id": "Benavides2005_AutomatedReasoning",
+            "title": "Automated Reasoning on FMs",
+            "longtitle": "Automated Reasoning on Feature Models",
+            "description": "A major historical milestone as the first proposal to successfully model and reason on both functional and extra-functional features (i.e., quality or non-functional features) within a single feature model. Its key importance lies in introducing Constraint Programming (CP) and Constraint Satisfaction Optimization Problems (CSOP) as the formal foundation for automated analysis, alongside Propositional Logic. This work extended traditional FMs to include measurable attributes and attribute-based constraints. Furthermore, it generalized the capabilities of automated reasoning by defining a suite of five core operations (counting, filtering, listing products, validation, and optimization) that were more advanced than previous limited attempts. This established the paradigm for product-line optimization based on quality attributes like cost or development time.",
+            "concepts": [
+                "Attributed Feature Model",
+                "Extended Feature Model"
+            ],
+            "hierarchy": [
+                "Automated Analysis",
+                "Constraint Programming based Analyses"
+            ],
+            "parents": [],
+            "awards": [
+                "🏆Most Influential Paper Award at SPLC 2017"
+            ]
         }
     ],
     "links": [
@@ -113,6 +230,30 @@
         {
             "source": "Lubars1988_ROSE",
             "target": "Biggerstaff1989_ROSE"
+        },
+        {
+            "source": "Benavides2005_AutomatedReasoning",
+            "target": "Benavides2010_AAFM20yearsSLR"
+        },
+        {
+            "source": "Benavides2010_AAFM20yearsSLR",
+            "target": "Horcas2021_MCTS"
+        },
+        {
+            "source": "Horcas2021_MCTS",
+            "target": "Horcas2023_MCTSFramework"
+        },
+        {
+            "source": "Horcas2021_Montecarlo",
+            "target": "Horcas2023_MCTSFramework"
+        },
+        {
+            "source": "Horcas2021_MCTS",
+            "target": "Horcas2021_Montecarlo"
+        },
+        {
+            "source": "Heradio2019_StatisticalAnalysisVM",
+            "target": "Horcas2021_Montecarlo"
         }
     ]
 }
