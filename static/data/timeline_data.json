@@ -1,0 +1,118 @@
+{
+    "nodes": [
+        {
+            "id": "Kang1990_FODA",
+            "title": "FODA",
+            "longtitle": "Feature-Oriented Domain Analysis (FODA)",
+            "description": "Feature modeling was originally proposed as part of the Feature-Oriented Domain Analysis (FODA) method. Historically, FODA builds on, among others, Neighbors's work on Draco, and Batory's domain analysis of DBMS and the Genesis tool.",
+            "concepts": [
+                "Feature model",
+                "Feature diagram"
+            ],
+            "hierarchy": [
+                "Fundamentals",
+                "Feature model's origins"
+            ],
+            "parents": [
+                "Neighbors1984_Draco",
+                "Batory1988_GENESIS",
+                "Moore1989_KAPTUR",
+                "Biggerstaff1989_ROSE"
+            ],
+            "citations": 2683
+        },
+        {
+            "id": "Neighbors1984_Draco",
+            "title": "Draco",
+            "longtitle": "The Draco approach",
+            "description": "The Draco approach to constructing software from reusable components.",
+            "concepts": [],
+            "hierarchy": [
+                "Fundamentals",
+                "Feature model's origins"
+            ],
+            "parents": [],
+            "citations": 480
+        },
+        {
+            "id": "Lubars1988_ROSE",
+            "title": "ROSE",
+            "longtitle": "The ROSE reuse system",
+            "description": "Wide-spectrum support for software reusability.The ROSE tool supported 'feature-based selection' of components. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
+            "concepts": [
+                "Feature-based selection of components"
+            ],
+            "hierarchy": [
+                "Fundamentals",
+                "Feature model's origins"
+            ],
+            "parents": []
+        },
+        {
+            "id": "Moore1989_KAPTUR",
+            "title": "KAPTUR",
+            "longtitle": "The KAPTUR system",
+            "description": "The KAPTUR Environment: An Operations Concept. The KAPTUR system used 'distinctive features' to distinguish systems within a domain. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
+            "concepts": [
+                "Distinctive features"
+            ],
+            "hierarchy": [
+                "Fundamentals",
+                "Feature model's origins"
+            ],
+            "parents": []
+        },
+        {
+            "id": "Batory1988_GENESIS",
+            "title": "GENESIS",
+            "longtitle": "The GENESIS tool",
+            "description": "GENESIS: an extensible database management system.",
+            "concepts": [],
+            "hierarchy": [
+                "Fundamentals",
+                "Feature model's origins"
+            ],
+            "parents": [],
+            "citations": 248
+        },
+        {
+            "id": "Biggerstaff1989_ROSE",
+            "title": "ROSE",
+            "longtitle": "The ROSE reuse system",
+            "description": "Design recovery for maintenance and reuse. The ROSE tool supported 'feature-based selection' of components. Feature-orientation can be traced back to the ROSE tool and the KAPTUR system.",
+            "concepts": [
+                "Feature-based selection of components"
+            ],
+            "hierarchy": [
+                "Fundamentals",
+                "Feature model's origins"
+            ],
+            "parents": [
+                "Lubars1988_ROSE"
+            ],
+            "citations": 405
+        }
+    ],
+    "links": [
+        {
+            "source": "Neighbors1984_Draco",
+            "target": "Kang1990_FODA"
+        },
+        {
+            "source": "Batory1988_GENESIS",
+            "target": "Kang1990_FODA"
+        },
+        {
+            "source": "Moore1989_KAPTUR",
+            "target": "Kang1990_FODA"
+        },
+        {
+            "source": "Biggerstaff1989_ROSE",
+            "target": "Kang1990_FODA"
+        },
+        {
+            "source": "Lubars1988_ROSE",
+            "target": "Biggerstaff1989_ROSE"
+        }
+    ]
+}

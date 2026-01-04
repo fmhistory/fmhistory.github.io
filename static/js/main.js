@@ -13,8 +13,8 @@ const d3 = window.d3;
 
 // Definiciones de la aplicación
 const DATA_PATH = 'static/data/';
-const JSON_FILE = 'fm_events.json';
-const BIB_FILE = 'refs.bib';
+const JSON_FILE = 'timeline_data.json';
+const BIB_FILE = 'publications.bib';
 const CONTAINER_SELECTOR = '#timeline'; 
 
 /**

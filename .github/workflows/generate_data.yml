@@ -1,0 +1,41 @@
+name: Generate Timeline Data
+
+on:
+  push:
+    paths:
+      - 'milestones/**.md'     # Se activa si cambia cualquier .md en milestones
+      - 'scripts/generate_json.py' # Opcional: si actualizas el script de procesamiento
+      - 'static/data/publications.bib' # Opcional: si añades nuevas referencias
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Recomendado para que Git tenga historial para comparar
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run script
+        run: python scripts/generate_json.py
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          # Importante: verifica que la ruta del JSON sea correcta según tu proyecto
+          git add static/data/timeline_data.json scripts/process_cache.json
+          
+          # Solo hace commit si hay cambios reales en el JSON o el cache
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Auto-update timeline_data.json" && git push)
