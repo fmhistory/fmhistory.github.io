@@ -17,7 +17,7 @@ class Timeline {
         this.nodes = data.nodes || []; 
         this.links = data.links || []; 
         this.containerSelector = selector;
-        this.margin = { top: 50, right: 20, bottom: 30, left: 150 };
+        this.margin = { top: 90, right: 20, bottom: 30, left: 150 };
         this.width = 0; 
         this.height = 0;
 
@@ -166,7 +166,7 @@ class Timeline {
         this.yScale = d3.scalePoint() 
             .domain(d3.range(1, this.yDomainSize + 1)) // We extend the domain to add an empty "lane" at the beginning and end
             //.domain(d3.range(0, this.yDomainSize + 2)) // We extend the domain to add an empty "lane" at the beginning and end
-            .range([this.height, 0])
+            .range([this.height, 50])  // el 50 baja las categorías para dar espacio arriba
             .padding(0.5); 
             
         // Color Scale (remains the same)
@@ -321,14 +321,22 @@ class Timeline {
             .call(yAxis)
             .select(".domain").remove();
 
-        // 2. X Axis (Time)
-        const xAxis = d3.axisBottom(this.xScale)
-            .tickFormat(d3.format("d")); 
-            
+        // 2. X Axis (Time: Top & Bottom)
+        const xAxisBottom = d3.axisBottom(this.xScale)
+            .tickFormat(d3.format("d"));
+
+        const xAxisTop = d3.axisTop(this.xScale)
+            .tickFormat(d3.format("d"));
+                
         this.chartArea.append("g")
             .attr("class", "x-axis")
             .attr("transform", `translate(0, ${this.height})`)
-            .call(xAxis);
+            .call(xAxisBottom);
+        
+        this.chartArea.append("g")
+            .attr("class", "x-axis x-axis-top")
+            .attr("transform", `translate(0, -20)`)
+            .call(xAxisTop);
 
         // 3. Category Branches (Horizontal Lines)
         categories.forEach(catName => {

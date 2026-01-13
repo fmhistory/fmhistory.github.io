@@ -5,6 +5,11 @@ Timeline with a Historical Perspective of the Feature Models.
 1. Execute `python -m http.server` in the main directory containing the index.html file.
 2. Open `http://[::1]:8000/` in a web browser.
 
+# How to update the timeline
+1. Add a new milestone (a new .md file in milestones/).
+2. Execute the script: python scripts/generate_json.py).
+
+
 # How to update citations (from Semantic Scholar)
 1. Create a virtual environment with Python: `python -m venv env`
 2. Activate the virtual enviroment:
