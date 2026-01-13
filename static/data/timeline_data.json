@@ -51,7 +51,8 @@
                 "Batory1988_GENESIS",
                 "Moore1989_KAPTUR",
                 "Biggerstaff1989_ROSE"
-            ]
+            ],
+            "citations": 0
         },
         {
             "id": "Lubars1988_ROSE",
@@ -65,7 +66,8 @@
                 "Fundamentals",
                 "Feature model's origins"
             ],
-            "parents": []
+            "parents": [],
+            "citations": 0
         },
         {
             "id": "Moore1989_KAPTUR",
@@ -79,7 +81,8 @@
                 "Fundamentals",
                 "Feature model's origins"
             ],
-            "parents": []
+            "parents": [],
+            "citations": 0
         },
         {
             "id": "Neighbors1984_Draco",
@@ -131,7 +134,8 @@
             ],
             "awards": [
                 "🏆Best Paper Award"
-            ]
+            ],
+            "citations": 0
         },
         {
             "id": "Horcas2023_MCTSFramework",
@@ -207,7 +211,8 @@
             ],
             "awards": [
                 "🏆Most Influential Paper Award at SPLC 2017"
-            ]
+            ],
+            "citations": 0
         },
         {
             "id": "Czarnecki2004_StagedConfiguration",
@@ -247,7 +252,8 @@
             "parents": [
                 "Kang1990_FODA"
             ],
-            "awards": []
+            "awards": [],
+            "citations": 0
         },
         {
             "id": "Czarnecki2005_CardinalityFMs",
@@ -264,7 +270,8 @@
             "parents": [
                 "Czarnecki2000_GenerativeProgramming"
             ],
-            "awards": []
+            "awards": [],
+            "citations": 0
         },
         {
             "id": "Czarnecki2005_StagedConfiguration",
@@ -282,7 +289,8 @@
             "parents": [
                 "Czarnecki2004_StagedConfiguration"
             ],
-            "awards": []
+            "awards": [],
+            "citations": 0
         },
         {
             "id": "Batory2005_FMsGrammarsAndPropositionalFormulas",
@@ -521,7 +529,8 @@
             "parents": [],
             "awards": [
                 "🏆Most Influential Paper Award at SPLC 2024"
-            ]
+            ],
+            "citations": 0
         },
         {
             "id": "Thum2009_ReasoningAboutEditsToFMs",
@@ -576,7 +585,8 @@
             ],
             "parents": [
                 "Zhang2004_EquivalentFeatures"
-            ]
+            ],
+            "citations": 0
         },
         {
             "id": "CarmoMachado2014_SPLTestingSLR",
@@ -708,7 +718,8 @@
             "parents": [
                 "Clements2001_SPLPracticesAndPatterns",
                 "Tseng2001_MassCustomization"
-            ]
+            ],
+            "citations": 0
         },
         {
             "id": "Clements2001_SPLPracticesAndPatterns",
@@ -721,7 +732,8 @@
             "hierarchy": [
                 "Software Product Lines"
             ],
-            "parents": []
+            "parents": [],
+            "citations": 0
         },
         {
             "id": "Tseng2001_MassCustomization",
@@ -734,7 +746,8 @@
             "hierarchy": [
                 "Software Product Lines"
             ],
-            "parents": []
+            "parents": [],
+            "citations": 0
         },
         {
             "id": "Pohl2005_SPLEngineering",
@@ -895,7 +908,8 @@
                 "Composition-based approaches",
                 "Aspect-Oriented Programming (AOP)"
             ],
-            "parents": []
+            "parents": [],
+            "citations": 0
         }
     ],
     "links": [
